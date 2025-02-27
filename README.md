@@ -65,7 +65,9 @@ npm start
 
 
 ### 📜 License
-© 2025 Agnes Wei
+© 2025 Agnes Wei. All rights reserved.
+
+This software and its code are proprietary. Unauthorized copying, modification, distribution, or use of this software, via any medium, is strictly prohibited without express written permission from Agnes Wei.
 
 ---
 Enjoy snapping fun pictures! 📷✨
