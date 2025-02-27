@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+/* N */
 const frames = {
   none: {
     draw: (ctx, x, y, width, height) => {}, 

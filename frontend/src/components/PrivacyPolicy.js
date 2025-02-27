@@ -1,6 +1,7 @@
 import React from 'react';
 import '../App.css';
 
+/* E */
 const PrivacyPolicy = () => {
   return (
     <div className="background-gradient h-screen flex flex-col justify-center items-center text-center">

@@ -2,13 +2,14 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
 
+/* A */
 const Home = () => {
   const navigate = useNavigate();
 
   return (
     <div className="background-gradient h-screen flex  flex-col justify-center items-center text-center">
-      <div className="home-container">
-        <h1 className="text-5xl font-bold text-pink-600 mb-4">picapica</h1>
+      <div className="home-container"> 
+        <h1 className="text-5xl font-bold text-pink-600 mb-4">picapica</h1> 
         <p className="text-lg text-gray-700 mb-6">
           Welcome to Agnes' photobooth! This is your personal photobooth at home.
         </p>      
@@ -23,7 +24,7 @@ const Home = () => {
           <p>
             made by{" "}
             <a
-              href="https://agneswei.com" 
+              /* href="https://agneswei.com" */
               target="_blank" 
               rel="noopener noreferrer" 
               style={{ color: "pink", textDecoration: "none" }}>

@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+/* G */
 const PhotoBooth = ({ setCapturedImages }) => {
   const navigate = useNavigate();
   const videoRef = useRef(null);
