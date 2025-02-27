@@ -65,7 +65,7 @@ npm start
 
 
 ### 📜 License
-MIT License © 2025 Agnes Wei
+© 2025 Agnes Wei
 
 ---
 Enjoy snapping fun pictures! 📷✨
