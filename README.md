@@ -1,6 +1,13 @@
 # Picapica 📸
 ![picapica](https://github.com/user-attachments/assets/4a6629c9-0c75-4a3a-a9f5-355712e2a372)
 
+# Picapica Photo Booth
+
+⚠️ **IMPORTANT**: This project is under a [Custom Restrictive License](LICENSE.md). Viewing is permitted, but copying, redistribution, and commercial use are prohibited without explicit permission.
+![Custom License](https://img.shields.io/badge/License-Custom%20Restrictive-red.svg)
+
+
+
 
 A simple **web-based photo booth** application built with **React** that captures images using a webcam, applies filters, and generates a downloadable photo strip!
 
