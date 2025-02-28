@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 /* S */
 const Welcome = () => {
+  const navigate = useNavigate();
   useEffect(() => {
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
