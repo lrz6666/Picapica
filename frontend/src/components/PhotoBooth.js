@@ -184,6 +184,18 @@ const PhotoBooth = ({ setCapturedImages }) => {
         <button onClick={() => setFilter("brightness(130%) contrast(105%) saturate(80%) blur(0.3px)")} disabled={capturing}>Soft</button>
       </div>
 
+      <div className="ad-container" style={{ marginTop: "20px", textAlign: "center" }}>
+        <ins className="adsbygoogle"
+          style={{ display: "block" }}
+          data-ad-client="ca-pub-7810675993668366"
+          data-ad-slot="3099521224"
+          data-ad-format="horizontal"
+          data-full-width-responsive="true"></ins>
+      </div>
+
+      <script>
+        {`(adsbygoogle = window.adsbygoogle || []).push({});`}
+      </script>
 
     </div>
   );
