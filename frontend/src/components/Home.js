@@ -24,7 +24,7 @@ const Home = () => {
           <p>
             made by{" "}
             <a
-              /* href="https://agneswei.com" */
+              href="https://agneswei.com" 
               target="_blank" 
               rel="noopener noreferrer" 
               style={{ color: "pink", textDecoration: "none" }}>
