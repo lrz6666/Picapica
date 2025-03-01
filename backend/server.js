@@ -195,11 +195,11 @@ app.post("/send-message", async (req, res) => {
       tls: {
         rejectUnauthorized: false
       },
-      // Add these options for better reliability
       connectionTimeout: 10000, 
       greetingTimeout: 10000,
       socketTimeout: 15000,
-      debug: true 
+      debug: true,
+      logger: true
     });
     
     // Verify connection
