@@ -12,7 +12,8 @@ const Home = () => {
         <h1 className="text-5xl font-bold text-pink-600 mb-4">picapica</h1> 
         <p className="text-lg text-gray-700 mb-6">
           Welcome to Agnes' photobooth! This is your personal photobooth at home.
-        </p>      
+        </p>     
+        <p>Please use our new link at picapicabooth.com</p> 
           
         <img src="/photobooth-strip.png" alt="photobooth strip" className="photobooth-strip"/>
         
