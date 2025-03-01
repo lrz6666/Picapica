@@ -13,7 +13,7 @@ const Home = () => {
         <p className="text-lg text-gray-700 mb-6">
           Welcome to Agnes' photobooth! This is your personal photobooth at home.
         </p>     
-        <p>Please use our new link at picapicabooth.com</p> 
+        <p>Please use our new link at <a href="https://picapicabooth.com" className="text-blue-500 underline">picapicabooth.com</a></p>
           
         <img src="/photobooth-strip.png" alt="photobooth strip" className="photobooth-strip"/>
         
