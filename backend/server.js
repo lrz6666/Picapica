@@ -28,7 +28,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use(cors({
-  origin: ["http://localhost:3000", "https://picapicaa.netlify.app"], 
+  origin: ["http://localhost:3000", "https://picapicaa.netlify.app", "https://picapicabooth.com"], 
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
@@ -183,7 +183,7 @@ app.post("/send-message", async (req, res) => {
   try {
     console.log("Testing email credentials...");
     console.log("Using email:", process.env.EMAIL);
-    console.log("Password length:", process.enc.EMAIL_PASS ? process.env.EMAIL_PASS.length : 0);
+    console.log("Password length:", process.eventNames.EMAIL_PASS ? process.env.EMAIL_PASS.length : 0);
     
     const transporter = nodemailer.createTransport({
       service: "gmail",
