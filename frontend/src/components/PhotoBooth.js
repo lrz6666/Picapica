@@ -10,8 +10,18 @@ const PhotoBooth = ({ setCapturedImages }) => {
   const [filter, setFilter] = useState("none");
   const [countdown, setCountdown] = useState(null);
   const [capturing, setCapturing] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    startCamera();
+
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const mobileRegex = /android|ipad|iphone|ipod|windows phone/i;
+      setIsMobile(mobileRegex.test(userAgent));
+    };
+
+    checkMobile();
     startCamera();
   
     const handleVisibilityChange = () => {
@@ -54,6 +64,64 @@ const PhotoBooth = ({ setCapturedImages }) => {
         console.error("Error accessing camera:", error);
     }
   };
+
+  // apply fitler using canvas api
+  const applyFilterToCanvas = (sourceCanvas, filterType) => {
+    const ctx = sourceCanvas.getContext("2d");
+    
+    // Save the original image data before applying filters
+    const imageData = ctx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+    const data = imageData.data;
+    
+    switch(filterType) {
+      case "grayscale(100%)":
+        for (let i = 0; i < data.length; i += 4) {
+          const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+          data[i] = data[i + 1] = data[i + 2] = avg;
+        }
+        break;
+      case "sepia(100%)":
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          
+          data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
+          data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
+          data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+        }
+        break;
+      case "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)":
+        // vintage effect
+        for (let i = 0; i < data.length; i += 4) {
+          const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+          const factor = 1.2; 
+          const r = Math.min(255, (avg - 128) * factor + 128 + 25);           
+          data[i] = Math.min(255, r * 1.07); 
+          data[i + 1] = Math.min(255, r * 0.95); 
+          data[i + 2] = Math.min(255, r * 0.8); 
+        }
+        break;
+      case "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)":
+        // soft effect
+        for (let i = 0; i < data.length; i += 4) {
+          const r = Math.min(255, data[i] * 1.3 * 1.05);
+          const g = Math.min(255, data[i + 1] * 1.3 * 1.05);
+          const b = Math.min(255, data[i + 2] * 1.3 * 1.05);
+          const avg = (r + g + b) / 3;
+          data[i] = r * 0.8 + avg * 0.2;
+          data[i + 1] = g * 0.8 + avg * 0.2;
+          data[i + 2] = b * 0.8 + avg * 0.2;
+        }
+        break;
+      default:
+        break;
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+    return sourceCanvas;
+  };
+  
 
   // Countdown to take 4 pictures automatically
   const startCountdown = () => {
@@ -136,7 +204,12 @@ const PhotoBooth = ({ setCapturedImages }) => {
 
         // Flip canvas for mirroring
         context.save();
-        context.filter = filter !== 'none' ? filter : 'none';
+
+        // Only use CSS filters on desktop
+        if (!isMobile && filter != 'none') {
+          context.filter = filter;
+        }
+
         context.translate(canvas.width, 0);
         context.scale(-1, 1);
 
@@ -146,6 +219,11 @@ const PhotoBooth = ({ setCapturedImages }) => {
             0, 0, targetWidth, targetHeight        
         );
         context.restore();
+
+       // mobile devices, apply filter manually with canvas api
+       if (isMobile && filter !== 'none') {
+        applyFilterToCanvas(canvas, filter);
+       }
 
         return canvas.toDataURL("image/png");
     }
@@ -157,15 +235,15 @@ const PhotoBooth = ({ setCapturedImages }) => {
 
     <div className="photo-container">
       <div className="camera-container">
-      <video 
-        ref={videoRef} 
-        autoPlay 
-        playsInline 
-        muted 
-        disablePictureInPicture 
-        disableRemotePlayback
-        className="video-feed" 
-        style={{ filter }}/>        
+        <video 
+          ref={videoRef} 
+          autoPlay 
+          playsInline 
+          muted 
+          disablePictureInPicture 
+          disableRemotePlayback
+          className="video-feed" 
+          style={{ filter }}/>        
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
