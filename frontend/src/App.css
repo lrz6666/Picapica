@@ -155,10 +155,10 @@ body {
 
 /* Privacy Policy */
 .background-gradient {
-  width: 100%;
+  width: 90%;
   height: 100vh;
-  margin: 0;
-  padding: 0;
+  margin: 0 auto;
+  padding: 60px;
   background: radial-gradient(
     circle at center,
     rgba(255, 153, 178, 0.5) 20%,
