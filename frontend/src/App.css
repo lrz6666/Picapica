@@ -793,15 +793,100 @@ footer a:hover {
   color: #333;
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
+/* Small devices (phones, up to 576px) */
+@media (max-width: 576px) {
+  .home-container h1 {
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+  }
+  
+  .welcome-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+  }
+  
+  .welcome-container p {
+    font-size: 0.9rem;
+  }
+  
+  .welcome-container button {
+    font-size: 1.1rem;
+    padding: 10px 20px;
+  }
+  
   .camera-container {
-    width: 100%;
-    height: 300px; 
+    height: 250px;
+  }
+  
+  .video-feed {
+    height: auto;
+    aspect-ratio: 4/3;
+  }
+  
+  .filters {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .filters button {
+    width: 80%;
+    margin-bottom: 8px;
+  }
+  
+  .preview-side {
+    display: none; /* Hide the side preview on very small devices */
+  }
+  
+  .photo-strip {
+    width: 85%;
+    max-width: 280px;
+  }
+  
+  .contact-form {
+    width: 95%;
+    padding: 15px;
+  }
+  
+  footer {
+    font-size: 0.7rem;
+  }
+}
+
+/* Medium devices (landscape phones, tablets, 576px to 992px) */
+@media (min-width: 577px) and (max-width: 992px) {
+  .home-container h1 {
+    font-size: 2.5rem;
+  }
+
+  .camera-container {
+    width: 80%;
+    height: 350px;
     padding: 10px;
   }
 
- 
+  .filters {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .preview-side {
+    margin-top: -50px;
+  }
+
+   
+  .side-preview {
+    width: 120px;
+    height: 90px;
+  }
+  
+  .photo-strip {
+    max-width: 320px;
+  }
+
+  .contact-form {
+    width: 80%;
+  }
+
   .video-feed {
     width: 100%;
     max-width: 600px;
@@ -929,11 +1014,124 @@ footer a:hover {
     width: 130px;
     margin: 5px auto;
   }
+}
 
+@media (min-width: 993px) and (max-width: 1200px) {
+  .camera-container {
+    width: 70%;
+    max-width: 650px;
+  }
+  
+  .preview-side {
+    margin-top: -80px;
+  }
+  
+  .side-preview {
+    width: 140px;
+    height: 105px;
+  }
+  
+  .photo-strip {
+    max-width: 350px;
+  }
+}
 
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1201px) {
+  .camera-container {
+    width: 600px;
+    height: 450px;
+  }
+  
+  .photo-strip {
+    max-width: 400px;
+  }
+  
+  .contact-form {
+    width: 400px;
+  }
+}
 
+/* Landscape mode adjustments for mobile devices */
+@media (max-height: 500px) and (orientation: landscape) {
+  .photo-booth {
+    padding-top: 60px;
+  }
+  
+  .camera-container {
+    height: 200px;
+    margin-bottom: 10px;
+  }
+  
+  .video-feed {
+    height: 200px;
+  }
+  
+  .filters {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .filters button {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+  
+  .controls button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .welcome-container {
+    padding-top: 40px;
+  }
+  
+  .welcome-container h1 {
+    margin-bottom: 20px;
+  }
+  
+  .home-container, .welcome-container, .contact-container {
+    justify-content: flex-start;
+    padding-top: 50px;
+  }
+}
 
+/* Fix for email input and send button on small screens */
+@media (max-width: 400px) {
+  .email-section input {
+    font-size: 14px;
+    padding: 10px 15px;
+  }
+  
+  .email-section button {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-buttons button {
+    width: 100%;
+  }
+}
 
+@media (min-width: 768px) and (max-width: 992px) {
+  .photo-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .preview-side {
+    flex-direction: row;
+    margin-top: 15px;
+    margin-left: 0;
+    justify-content: center;
+  }
 }
 
 /* Animations */
