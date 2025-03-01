@@ -181,27 +181,25 @@ app.post("/send-message", async (req, res) => {
   );
 
   try {
-    console.log("Testing email credentials...");
-    console.log("Using email:", process.env.EMAIL);
-    console.log("Password length:", process.eventNames.EMAIL_PASS ? process.env.EMAIL_PASS.length : 0);
-    
+    console.log("Setting up email transport for contact form...");
+   
     const transporter = nodemailer.createTransport({
       service: "gmail",
       host: "smtp.gmail.com",
       port: 587,
       secure: false,
       auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASS
+        user: process.env.CONTACT_EMAIL,
+        pass: process.env.CONTACT_EMAIL_PASS
       },
       tls: {
         rejectUnauthorized: false
       },
       // Add these options for better reliability
-      connectionTimeout: 10000, // 10 seconds
+      connectionTimeout: 10000, 
       greetingTimeout: 10000,
       socketTimeout: 15000,
-      debug: true // Enable debug output
+      debug: true 
     });
     
     // Verify connection
