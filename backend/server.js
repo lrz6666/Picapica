@@ -46,21 +46,16 @@ if (!fs.existsSync(uploadDir)) {
 const validateEmail = (email) => {
   // Basic regex for email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) return false;
+
+  if (!emailRegex.test(email)) {
+    return false;
+  }
+
+  if (email.includes('..')) {
+    return false;
+  }
   
-  // Check for common typos and issues
-  if (email.includes('..') || email.endsWith('.') || email.startsWith('.')) return false;
-  if (email.includes('@@') || email.startsWith('@')) return false;
-  
-  // Get domain part
-  const domain = email.split('@')[1];
-  if (!domain || domain.length < 3) return false;
-  
-  // Check for valid TLD
-  const tld = domain.split('.').pop();
-  if (!tld || tld.length < 2) return false;
-  
-  return true;
+  return true;   
 };
 
 // Create a robust email transporter
@@ -370,7 +365,7 @@ app.post("/send-photo-strip", async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Photo strip sent successfully!",
+      message: "Photo strip sent successfully! Please check your inbox and spam.",
       messageId: info.messageId
     });
   } catch (error) {
