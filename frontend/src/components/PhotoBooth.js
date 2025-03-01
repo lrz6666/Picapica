@@ -157,7 +157,15 @@ const PhotoBooth = ({ setCapturedImages }) => {
 
     <div className="photo-container">
       <div className="camera-container">
-        <video ref={videoRef} autoPlay className="video-feed" style={{ filter }} />
+      <video 
+        ref={videoRef} 
+        autoPlay 
+        playsInline 
+        muted 
+        disablePictureInPicture 
+        disableRemotePlayback
+        className="video-feed" 
+        style={{ filter }}/>        
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
