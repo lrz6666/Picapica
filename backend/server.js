@@ -71,8 +71,8 @@ const createTransporter = () => {
     port: 587,
     secure: false,
     auth: {
-      user: process.env.CONTACT_EMAIL,
-      pass: process.env.CONTACT_EMAIL_PASS,
+      user: process.env.NOREPLY_EMAIL,
+      pass: process.env.NOREPLY_EMAIL_PASS,
     },
     tls: {
       rejectUnauthorized: false
@@ -210,7 +210,7 @@ app.post("/send-message", async (req, res) => {
     
     const mailOptions = {
       from: formattedFrom,
-      to: process.env.NOREPLY_EMAIL,
+      to: process.env.CONTACT_EMAIL,
       subject: `New Message from ${name}`,
       text: `Email: ${email}\n\nMessage:\n${message}`,
       replyTo: email
