@@ -71,8 +71,8 @@ const createTransporter = () => {
     port: 587,
     secure: false,
     auth: {
-      user: process.env.EMAIL,
-      pass: process.env.EMAIL_PASS
+      user: process.env.CONTACT_EMAILEMAIL,
+      pass: process.env.CONTACT_EMAIL_PASS,
     },
     tls: {
       rejectUnauthorized: false
@@ -289,8 +289,8 @@ app.post("/send-photo-strip", async (req, res) => {
 
   console.log("Attempting to send photo strip to:", recipientEmail);
   console.log("Environment variables check:", {
-    hasEmail: !!process.env.EMAIL,
-    hasEmailPass: !!process.env.EMAIL_PASS
+    hasEmail: !!process.env.NOREPLY_EMAIL,
+    hasEmailPass: !!process.env.NOREPLY_EMAIL_PASS
   });
   
   // Email validation
@@ -423,105 +423,6 @@ app.get("/saved-emails", (req, res) => {
   });
 });
 
-// Test endpoint to verify email configuration
-app.get("/test-email", async (req, res) => {
-  const testEmail = req.query.email;
-  const adminKey = req.query.key;
-  
-  // Simple admin key protection - you should change this to a secure value
-  if (adminKey !== "picapica-admin-key") {
-    return res.status(401).json({ message: "Unauthorized access" });
-  }
-  
-  if (!testEmail) {
-    return res.status(400).json({ message: "Email parameter is required" });
-  }
-  
-  try {
-    console.log("Testing email delivery to:", testEmail);
-    
-    if (!validateEmail(testEmail)) {
-      return res.status(400).json({ message: "Invalid email format" });
-    }
-    
-    // Create a transporter with diagnostics enabled
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASS
-      },
-      tls: {
-        rejectUnauthorized: false
-      },
-      debug: true,
-      logger: true
-    });
-    
-    // Check transporter configuration
-    const verificationResult = await transporter.verify();
-    console.log("Transporter verification:", verificationResult);
-    
-    // Test email options
-    const mailOptions = {
-      from: `"Picapica Test" <${process.env.EMAIL}>`,
-      to: testEmail,
-      subject: "Email Delivery Test from Picapica",
-      text: "This is a test email to verify the delivery system is working correctly.",
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; border-radius: 5px;">
-          <h2 style="color: #ff69b4;">Picapica Email Test</h2>
-          <p>This is a test email to verify that our delivery system is working correctly.</p>
-          <p>Current server time: ${new Date().toLocaleString()}</p>
-          <p>If you received this email, the system is functioning properly!</p>
-        </div>
-      `
-    };
-    
-    // Send the test email with detailed response
-    const info = await transporter.sendMail(mailOptions);
-    
-    console.log("Test email sent:", info);
-    
-    // Log successful test email
-    logEmailAttempt(testEmail, true, info.messageId, { type: "test_email" });
-    
-    // Return detailed information
-    res.json({
-      success: true,
-      message: "Test email sent successfully",
-      details: {
-        messageId: info.messageId,
-        response: info.response,
-        accepted: info.accepted,
-        rejected: info.rejected,
-        envelope: info.envelope
-      }
-    });
-  } catch (error) {
-    console.error("Test email error:", error);
-    
-    // Log failed test email
-    logEmailAttempt(testEmail, false, null, {
-      code: error.code,
-      message: error.message,
-      type: "test_email"
-    });
-    
-    res.status(500).json({
-      success: false,
-      message: "Failed to send test email",
-      error: {
-        code: error.code,
-        message: error.message,
-        response: error.response
-      }
-    });
-  }
-});
 
 // Email stats endpoint
 app.get("/email-stats", (req, res) => {
