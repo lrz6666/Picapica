@@ -4,9 +4,10 @@
   command = "npm install && npm run build"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+  from = "https://picapicaa.netlify.app/*"
+  to = "https://picapicabooth.com/:splat"
+  status = 301
+  force = true
 
 [build.environment]
   NODE_VERSION = "18"
