@@ -71,7 +71,7 @@ const createTransporter = () => {
     port: 587,
     secure: false,
     auth: {
-      user: process.env.CONTACT_EMAILEMAIL,
+      user: process.env.CONTACT_EMAIL,
       pass: process.env.CONTACT_EMAIL_PASS,
     },
     tls: {
@@ -210,7 +210,7 @@ app.post("/send-message", async (req, res) => {
     
     const mailOptions = {
       from: formattedFrom,
-      to: process.env.EMAIL,
+      to: process.env.NOREPLY_EMAIL,
       subject: `New Message from ${name}`,
       text: `Email: ${email}\n\nMessage:\n${message}`,
       replyTo: email
@@ -333,13 +333,13 @@ app.post("/send-photo-strip", async (req, res) => {
     }
 
     const mailOptions = {
-      from: `"Picapica Photobooth" <${process.env.EMAIL}>`, // Use a friendly sender name
+      from: `"Picapica Photobooth" <${process.env.NOREPLY_EMAIL}>`, // Use a friendly sender name
       to: recipientEmail,
       subject: "Your Photo Strip from Picapica 📸",
       text: "Thanks for using Picapica! Here's your photo strip. We hope you had fun!",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-          <h1 style="color: #ff69b4; text-align: center;">Your Picapica Photo Strip!</h1>
+          <h1 style="color: #dd88b3; text-align: center;">Your Picapica Photo Strip!</h1>
           <p style="text-align: center; font-size: 16px;">
             Thanks for using Picapica! Here's your photo strip.
           </p>
