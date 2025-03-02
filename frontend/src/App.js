@@ -33,6 +33,14 @@ function App() {
           <Link to="/contact" onClick={closeMobileNav}>Contact</Link>
         </div>
 
+        <div className="paypal-form">
+            <form action="https://www.paypal.com/donate" method="post" target="_top">
+              <input type="hidden" name="hosted_button_id" value="VMLZHE6KGTZGQ" />
+              <input type="image" src="https://pics.paypal.com/00/s/YWRhODcwY2EtZWVhZC00OGY3LThhYTMtMzI1OWViYzIwYjUy/file.PNG" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" className="paypal-button" />
+              <img alt="" border="0" src="https://www.paypal.com/en_CA/i/scr/pixel.gif" width="1" height="1" />
+            </form>
+          </div>
+
         {/* Hamburger Icon (Mobile Only) */}
         <div className={`hamburger ${isMobileNavOpen ? "open" : ""}`} onClick={toggleMobileNav}>
           <div className="bar"></div>
