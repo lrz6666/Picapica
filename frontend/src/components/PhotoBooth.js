@@ -19,7 +19,6 @@ const PhotoBooth = ({ setCapturedImages }) => {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
       const mobileRegex = /android|ipad|iphone|ipod|windows phone/i;
       setIsMobile(mobileRegex.test(userAgent));
-
     };
 
     checkMobile();
@@ -31,22 +30,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
         }
     };
 
-    const handleResize = () => {
-      if (videoRef.current && isMobile) {
-        const vh = window.innerHeight;
-        const maxHeight = vh * 0.7;
-        
-        if (videoRef.current.offsetHeight > maxHeight) {
-          videoRef.current.style.height = `${maxHeight}px`;
-          videoRef.current.style.width = 'auto';
-        }
-      }
-    };
-  
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    if (isMobile) {
-      window.addEventListener('resize', handleResize);
-    }
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -65,63 +49,29 @@ const PhotoBooth = ({ setCapturedImages }) => {
             return; 
         }
 
-        if (isMobile && videoRef.current) {
-          videoRef.current.style.width = '100vw';
-          videoRef.current.style.height = 'auto';
-          videoRef.current.style.objectFit = 'cover';
-          videoRef.current.style.borderRadius = '0';
-          videoRef.current.style.border = 'none';
-        }
-
         const constraints = {
           video: {
               facingMode: "user",
-              width: { ideal: isMobile ? 1280 : 1280 }, // Lower resolution for mobile
+              width: { ideal: isMobile ? 1280 : 1280 }, 
                height: { ideal: isMobile ? 720 : 720 },
               frameRate: { ideal: 30 } 
           }
       };
 
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            try {
-              await videoRef.current.play();
-            } catch (err) {
-              console.error("Error playing video:", err);
-            }
-
-            videoRef.current.style.transform = "scaleX(-1)";
-            videoRef.current.style.objectFit = "cover";
-            
-            if (isMobile) {
-              // Force full width for mobile
-              videoRef.current.style.width = '100vw';
-              videoRef.current.style.maxWidth = '100vw';
-              videoRef.current.style.borderRadius = '0';
-              videoRef.current.style.border = 'none';
-              videoRef.current.style.left = '0';
-              
-              // Position the element to be full-width
-              const parent = videoRef.current.parentElement;
-              if (parent) {
-                parent.style.width = '100vw';
-                parent.style.maxWidth = '100vw';
-                parent.style.margin = '0';
-                parent.style.padding = '0';
-                parent.style.left = '0';
-                parent.style.position = 'relative';
-              }
-            }
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          try {
+            await videoRef.current.play();
+          } catch (err) {
+            console.error("Error playing video:", err);
           }
-        } catch (error) {
-          console.error("Error accessing camera:", error);
-          // Provide user feedback about camera access failure
-          alert("Could not access your camera. Please ensure camera permissions are granted in your browser settings.");
-        }
-      };
-
-
+       }
+   } catch (error) {
+     console.error("Error accessing camera:", error);
+     alert("Could not access your camera. Please ensure camera permissions are granted in your browser settings.");
+   }
+  };
 
 
   // apply fitler using canvas api
