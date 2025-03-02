@@ -29,13 +29,33 @@ const PhotoBooth = ({ setCapturedImages }) => {
             startCamera();
         }
     };
+
+    const handleResize = () => {
+      if (videoRef.current && isMobile) {
+        const vh = window.innerHeight;
+        const maxHeight = vh * 0.7;
+        
+        if (videoRef.current.offsetHeight > maxHeight) {
+          videoRef.current.style.height = `${maxHeight}px`;
+          videoRef.current.style.width = 'auto';
+        }
+      }
+    };
   
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    
+    if (isMobile) {
+      window.addEventListener('resize', handleResize);
+    }
+
     return () => {
-        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener('resize', handleResize);
+      if (videoRef.current && videoRef.current.srcObject) {
+        const tracks = videoRef.current.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+      }
     };
-  }, []);
+  }, [isMobile]);
 
   // Start Camera
   const startCamera = async () => {
@@ -46,8 +66,8 @@ const PhotoBooth = ({ setCapturedImages }) => {
         const constraints = {
           video: {
               facingMode: "user",
-              width: { ideal: 1920 }, 
-              height: { ideal: 1080 },
+              width: { ideal: isMobile ? 640 : 1280 }, // Lower resolution for mobile
+               height: { ideal: isMobile ? 480 : 720 },
               frameRate: { ideal: 30 } 
           }
       };
@@ -55,15 +75,43 @@ const PhotoBooth = ({ setCapturedImages }) => {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         if (videoRef.current) {
             videoRef.current.srcObject = stream;
-            videoRef.current.play().catch(err => console.error("Error playing video:", err));
+            try {
+              await videoRef.current.play();
+            } catch (err) {
+              console.error("Error playing video:", err);
+            }
 
             videoRef.current.style.transform = "scaleX(-1)";
-            videoRef.current.style.objectFit = "cover"; 
+            videoRef.current.style.objectFit = isMobile ? "contain" : "cover";  
+            
+            if (isMobile) {
+              const checkVideoSize = () => {
+                if (videoRef.current) {
+                  const vh = window.innerHeight;
+                  const maxHeight = vh * 0.7; // 70% of viewport height
+                  
+                  if (videoRef.current.offsetHeight > maxHeight) {
+                    videoRef.current.style.height = `${maxHeight}px`;
+                    videoRef.current.style.width = 'auto';
+                  }
+                }
+              };
+
+              videoRef.current.onloadedmetadata = checkVideoSize;
+
+              window.addEventListener('resize', checkVideoSize);
+              return () => window.removeEventListener('resize', checkVideoSize);
+            }
+          }
+        } catch (error) {
+          console.error("Error accessing camera:", error);
+          // Provide user feedback about camera access failure
+          alert("Could not access your camera. Please ensure camera permissions are granted in your browser settings.");
         }
-    } catch (error) {
-        console.error("Error accessing camera:", error);
-    }
-  };
+      };
+
+
+
 
   // apply fitler using canvas api
   const applyFilterToCanvas = (sourceCanvas, filterType) => {
