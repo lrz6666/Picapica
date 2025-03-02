@@ -19,6 +19,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
       const mobileRegex = /android|ipad|iphone|ipod|windows phone/i;
       setIsMobile(mobileRegex.test(userAgent));
+
     };
 
     checkMobile();
@@ -176,47 +177,56 @@ const PhotoBooth = ({ setCapturedImages }) => {
     if (capturing) return;
     setCapturing(true);
   
+    setImages([]);
+    
     let photosTaken = 0;
     const newCapturedImages = [];
-  
+    
     const captureSequence = async () => {
-        if (photosTaken >= 4) {
-            setCountdown(null);
-            setCapturing(false);
-
-            try {
-                setCapturedImages([...newCapturedImages]);
-                setImages([...newCapturedImages]);
-
-                setTimeout(() => {
-                    navigate("/preview");
-                }, 200);
-            } catch (error) {
-                console.error("Error navigating to preview:", error);
-            }
-            return;
+      if (photosTaken >= 4) {
+        setCountdown(null);
+        setCapturing(false);
+  
+        if (isMobile) {
+          // Just display the images in the preview-side
+          setCapturedImages([...newCapturedImages]);
+          setImages([...newCapturedImages]);
+        } else {
+          try {
+            setCapturedImages([...newCapturedImages]);
+            setImages([...newCapturedImages]);
+  
+            setTimeout(() => {
+              navigate("/preview");
+            }, 500);
+          } catch (error) {
+            console.error("Error navigating to preview:", error);
+            setImages([...newCapturedImages]);
+          }
         }
-
-        let timeLeft = 3;
+        return;
+      }
+  
+      let timeLeft = 3;
+      setCountdown(timeLeft);
+  
+      const timer = setInterval(() => {
+        timeLeft -= 1;
         setCountdown(timeLeft);
-
-        const timer = setInterval(() => {
-            timeLeft -= 1;
-            setCountdown(timeLeft);
-
-            if (timeLeft === 0) {
-                clearInterval(timer);
-                const imageUrl = capturePhoto();
-                if (imageUrl) {
-                    newCapturedImages.push(imageUrl);
-                    setImages((prevImages) => [...prevImages, imageUrl]);
-                }
-                photosTaken += 1;
-                setTimeout(captureSequence, 1000);
-            }
-        }, 1000);
+  
+        if (timeLeft === 0) {
+          clearInterval(timer);
+          const imageUrl = capturePhoto();
+          if (imageUrl) {
+            newCapturedImages.push(imageUrl);
+            setImages((prevImages) => [...prevImages, imageUrl]);
+          }
+          photosTaken += 1;
+          setTimeout(captureSequence, 1000);
+        }
+      }, 1000);
     };
-
+  
     captureSequence();
   };
 
@@ -279,28 +289,40 @@ const PhotoBooth = ({ setCapturedImages }) => {
 
   return (
     <div className="photo-booth">
-            {countdown !== null && <h2 className="countdown animate">{countdown}</h2>}
+      {countdown !== null && <h2 className="countdown animate">{countdown}</h2>}
 
-    <div className="photo-container">
-      <div className="camera-container">
-        <video 
-          ref={videoRef} 
-          autoPlay 
-          playsInline 
-          muted 
-          disablePictureInPicture 
-          disableRemotePlayback
-          className="video-feed" 
-          style={{ filter }}/>        
-        <canvas ref={canvasRef} className="hidden" />
-      </div>
+      <div className="photo-container">
+        <div className="camera-container">
+          <video 
+            ref={videoRef} 
+            autoPlay 
+            playsInline 
+            muted 
+            disablePictureInPicture 
+            disableRemotePlayback
+            className="video-feed" 
+            style={{ filter }}/>        
+          <canvas ref={canvasRef} className="hidden" />
+        </div>
 
         <div className="preview-side">
-          {capturedImages.map((image, index) => (
-            <img key={index} src={image} alt={`Captured ${index + 1}`} className="side-preview" />
-          ))}
-        </div>
+        {capturedImages.map((image, index) => (
+          <img 
+            key={index} 
+            src={image} 
+            alt={`Captured ${index + 1}`} 
+            className="side-preview"
+          />
+        ))}
+        {isMobile && capturedImages.length === 4 && (
+          <div className="mobile-actions">
+            <button onClick={() => navigate("/preview")}>
+              View & Edit Photos
+            </button>
+          </div>
+        )}
       </div>
+    </div>
       
       <div className="controls">
         <button onClick={startCountdown} disabled={capturing}>
