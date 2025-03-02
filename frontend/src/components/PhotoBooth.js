@@ -72,73 +72,133 @@ const PhotoBooth = ({ setCapturedImages }) => {
 
 
   // apply fitler using canvas api
-  const applyFilterToCanvas = (sourceCanvas, filterType) => {
-    const ctx = sourceCanvas.getContext("2d");
+// Replace your applyFilterToCanvas function with this corrected version
+const applyFilterToCanvas = (sourceCanvas, filterType) => {
+  const ctx = sourceCanvas.getContext("2d");
+  
+  // Save the original image data before applying filters
+  const imageData = ctx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+  const data = imageData.data;
+  
+  switch(filterType) {
+    case "grayscale(100%)":
+      for (let i = 0; i < data.length; i += 4) {
+        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        data[i] = data[i + 1] = data[i + 2] = avg;
+      }
+      break;
+      
+    case "sepia(100%)":
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        
+        data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
+        data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
+        data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+      }
+      break;
+      
+    case "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)":
+      // vintage effect - FIXED version
+      for (let i = 0; i < data.length; i += 4) {
+        // Get original RGB values
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        
+        // Apply grayscale first (no need to store in avg variable yet)
+        const grayValue = (r + g + b) / 3;
+        
+        // Apply contrast and brightness
+        const factor = 1.2; // Contrast factor
+        const brightness = 28; // Brightness boost (110%)
+        const adjustedValue = Math.min(255, Math.max(0, (grayValue - 128) * factor + 128 + brightness));
+        
+        // Apply sepia at 30%
+        const sepiaFactor = 0.3;
+        const normalFactor = 0.7;
+        
+        // Calculate sepia values
+        const sepiaR = (r * 0.393) + (g * 0.769) + (b * 0.189);
+        const sepiaG = (r * 0.349) + (g * 0.686) + (b * 0.168);
+        const sepiaB = (r * 0.272) + (g * 0.534) + (b * 0.131);
+        
+        // Mix regular grayscale with sepia tones
+        data[i] = Math.min(255, adjustedValue * normalFactor + sepiaR * sepiaFactor);
+        data[i + 1] = Math.min(255, adjustedValue * normalFactor + sepiaG * sepiaFactor);
+        data[i + 2] = Math.min(255, adjustedValue * normalFactor + sepiaB * sepiaFactor);
+      }
+      break;
+      
+    case "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)":
+      // soft effect
+      for (let i = 0; i < data.length; i += 4) {
+        // Get original RGB values
+        let r = data[i];
+        let g = data[i + 1];
+        let b = data[i + 2];
+        
+        // Apply brightness
+        const brightness = 1.3; // 130%
+        r = r * brightness;
+        g = g * brightness;
+        b = b * brightness;
+        
+        // Apply contrast
+        const contrast = 1.05; // 105%
+        r = (r - 128) * contrast + 128;
+        g = (g - 128) * contrast + 128;
+        b = (b - 128) * contrast + 128;
+        
+        // Apply saturation (80%)
+        const avg = (r + g + b) / 3;
+        const satFactor = 0.8; // 80% saturation
+        
+        data[i] = Math.min(255, Math.max(0, r * satFactor + avg * (1 - satFactor)));
+        data[i + 1] = Math.min(255, Math.max(0, g * satFactor + avg * (1 - satFactor)));
+        data[i + 2] = Math.min(255, Math.max(0, b * satFactor + avg * (1 - satFactor)));
+      }
+      break;
+      
+    default:
+      break;
+  }
+  
+  ctx.putImageData(imageData, 0, 0);
+  return sourceCanvas;
+};
+
+  useEffect(() => {
+    startCamera();
+  
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const mobileRegex = /android|ipad|iphone|ipod|windows phone/i;
+      setIsMobile(mobileRegex.test(userAgent));
+    };
     
-    // Save the original image data before applying filters
-    const imageData = ctx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
-    const data = imageData.data;
-    
-    switch(filterType) {
-      case "grayscale(100%)":
-        for (let i = 0; i < data.length; i += 4) {
-          const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-          data[i] = data[i + 1] = data[i + 2] = avg;
-        }
-        break;
-      case "sepia(100%)":
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          
-          data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
-          data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
-          data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
-        }
-        break;
-      case "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)":
-        // vintage effect
-        for (let i = 0; i < data.length; i += 4) {
-          const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-          const factor = 1.2; 
-          const brightness = 28; 
-          const r = Math.min(255, Math.max(0, (avg - 128) * factor + 128 + brightness));
-          const sepiaFactor = 0.3;
-          const normalFactor = 0.7;
-          data[i] = Math.min(255, r * normalFactor + (r * 0.393 + g * 0.769 + b * 0.189) * sepiaFactor);
-          data[i + 1] = Math.min(255, r * normalFactor + (r * 0.349 + g * 0.686 + b * 0.168) * sepiaFactor);
-         data[i + 2] = Math.min(255, r * normalFactor + (r * 0.272 + g * 0.534 + b * 0.131) * sepiaFactor);
-        }
-        break;
-      case "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)":
-        // soft effect
-        for (let i = 0; i < data.length; i += 4) {
-          const brightness = 1.3; // 130%
-          const contrast = 1.05; // 105%
-          let r = data[i];
-          let g = data[i + 1];
-          let b = data[i + 2];
-          r = r * brightness;
-          g = g * brightness;
-          b = b * brightness;
-          r = (r - 128) * contrast + 128;
-          g = (g - 128) * contrast + 128;
-          b = (b - 128) * contrast + 128;
-          const avg = (r + g + b) / 3;
-          const satFactor = 0.8; // 80% saturation         
-          data[i] = Math.min(255, Math.max(0, r * satFactor + avg * (1 - satFactor)));
-          data[i + 1] = Math.min(255, Math.max(0, g * satFactor + avg * (1 - satFactor)));
-          data[i + 2] = Math.min(255, Math.max(0, b * satFactor + avg * (1 - satFactor)));
-        }
-        break;
-      default:
-        break;
-    }
-    
-    ctx.putImageData(imageData, 0, 0);
-    return sourceCanvas;
-  };
+    // Call checkMobile to initialize the state
+    checkMobile();
+  
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        startCamera();
+      }
+    };
+  
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+  
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (videoRef.current && videoRef.current.srcObject) {
+        const tracks = videoRef.current.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+      }
+    };
+  }, [isMobile]);
+  
   
 
   // Countdown to take 4 pictures automatically
