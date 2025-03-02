@@ -3,6 +3,16 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 /* N */
+const drawMofusandFrame = (ctx, canvas) => {
+  const frameImg = new Image();
+  frameImg.src = '/mofusand-frame.png';
+  
+  frameImg.onload = () => {
+    // Draw the entire frame image on top of the photo strip
+    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+  };
+};
+
 const frames = {
   none: {
     draw: (ctx, x, y, width, height) => {}, 
@@ -128,7 +138,12 @@ const frames = {
         drawCloud(x + width - 5, y + height - 85);
         drawStar(x + width - 120, y + height - 5, 12, "#40E0D0");
    }
-  }
+  },
+
+  mofusandImage: {
+    draw: (ctx, x, y, width, height) => {
+    }
+  } 
 };
 
 const PhotoPreview = ({ capturedImages }) => {
@@ -189,6 +204,8 @@ const PhotoPreview = ({ capturedImages }) => {
             borderSize, yOffset, imgWidth, imgHeight      
         );
 
+        
+
         if (frames[selectedFrame] && typeof frames[selectedFrame].draw === 'function') {
           frames[selectedFrame].draw(
               ctx,
@@ -197,9 +214,10 @@ const PhotoPreview = ({ capturedImages }) => {
               imgWidth,
               imgHeight
           );
-      }
+       } 
+    
         
-        imagesLoaded++;
+        
 
         if (imagesLoaded === capturedImages.length) {
           const now = new Date();
@@ -214,8 +232,6 @@ const PhotoPreview = ({ capturedImages }) => {
             hour12: true
           });
           
-
-
           ctx.fillStyle = stripColor === "black" ? "#FFFFFF" : "#000000";
           ctx.font = "20px Arial";
           ctx.textAlign = "center";
@@ -232,9 +248,13 @@ const PhotoPreview = ({ capturedImages }) => {
               canvas.width - borderSize,
               totalHeight - borderSize / 2
           );
+
+          if (selectedFrame === "mofusandImage") {
+            drawMofusandFrame(ctx, canvas, imgWidth, imgHeight, borderSize, photoSpacing);
         }
-      };
-    });
+      }
+    };
+  });
   }, [capturedImages, stripColor, selectedFrame]);
 
   useEffect(() => {
@@ -405,6 +425,7 @@ const PhotoPreview = ({ capturedImages }) => {
           <button onClick={() => setSelectedFrame("none")}>No Stickers</button>
           <button onClick={() => setSelectedFrame("pastel")}>Girlypop Stickers</button>
           <button onClick={() => setSelectedFrame("cute")}>Cute Stickers</button>
+          <button onClick={() => setSelectedFrame("mofusandImage")}>Mofusand</button>
         </div>
       </div>
   

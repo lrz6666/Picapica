@@ -102,22 +102,34 @@ const PhotoBooth = ({ setCapturedImages }) => {
         for (let i = 0; i < data.length; i += 4) {
           const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
           const factor = 1.2; 
-          const r = Math.min(255, (avg - 128) * factor + 128 + 25);           
-          data[i] = Math.min(255, r * 1.07); 
-          data[i + 1] = Math.min(255, r * 0.95); 
-          data[i + 2] = Math.min(255, r * 0.8); 
+          const brightness = 28; 
+          const r = Math.min(255, Math.max(0, (avg - 128) * factor + 128 + brightness));
+          const sepiaFactor = 0.3;
+          const normalFactor = 0.7;
+          data[i] = Math.min(255, r * normalFactor + (r * 0.393 + g * 0.769 + b * 0.189) * sepiaFactor);
+          data[i + 1] = Math.min(255, r * normalFactor + (r * 0.349 + g * 0.686 + b * 0.168) * sepiaFactor);
+         data[i + 2] = Math.min(255, r * normalFactor + (r * 0.272 + g * 0.534 + b * 0.131) * sepiaFactor);
         }
         break;
       case "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)":
         // soft effect
         for (let i = 0; i < data.length; i += 4) {
-          const r = Math.min(255, data[i] * 1.3 * 1.05);
-          const g = Math.min(255, data[i + 1] * 1.3 * 1.05);
-          const b = Math.min(255, data[i + 2] * 1.3 * 1.05);
+          const brightness = 1.3; // 130%
+          const contrast = 1.05; // 105%
+          let r = data[i];
+          let g = data[i + 1];
+          let b = data[i + 2];
+          r = r * brightness;
+          g = g * brightness;
+          b = b * brightness;
+          r = (r - 128) * contrast + 128;
+          g = (g - 128) * contrast + 128;
+          b = (b - 128) * contrast + 128;
           const avg = (r + g + b) / 3;
-          data[i] = r * 0.8 + avg * 0.2;
-          data[i + 1] = g * 0.8 + avg * 0.2;
-          data[i + 2] = b * 0.8 + avg * 0.2;
+          const satFactor = 0.8; // 80% saturation         
+          data[i] = Math.min(255, Math.max(0, r * satFactor + avg * (1 - satFactor)));
+          data[i + 1] = Math.min(255, Math.max(0, g * satFactor + avg * (1 - satFactor)));
+          data[i + 2] = Math.min(255, Math.max(0, b * satFactor + avg * (1 - satFactor)));
         }
         break;
       default:
@@ -213,6 +225,8 @@ const PhotoBooth = ({ setCapturedImages }) => {
             startY = (video.videoHeight - drawHeight) / 2;
         }
 
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
         // Flip canvas for mirroring
         context.save();
 
@@ -238,6 +252,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 
         return canvas.toDataURL("image/png");
     }
+    return null;
 };
 
   return (
