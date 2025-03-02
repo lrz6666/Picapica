@@ -64,11 +64,20 @@ const PhotoBooth = ({ setCapturedImages }) => {
         if (videoRef.current && videoRef.current.srcObject) {
             return; 
         }
+
+        if (isMobile && videoRef.current) {
+          videoRef.current.style.width = '100vw';
+          videoRef.current.style.height = 'auto';
+          videoRef.current.style.objectFit = 'cover';
+          videoRef.current.style.borderRadius = '0';
+          videoRef.current.style.border = 'none';
+        }
+
         const constraints = {
           video: {
               facingMode: "user",
-              width: { ideal: isMobile ? 640 : 1280 }, // Lower resolution for mobile
-               height: { ideal: isMobile ? 480 : 720 },
+              width: { ideal: isMobile ? 1280 : 1280 }, // Lower resolution for mobile
+               height: { ideal: isMobile ? 720 : 720 },
               frameRate: { ideal: 30 } 
           }
       };
@@ -83,25 +92,26 @@ const PhotoBooth = ({ setCapturedImages }) => {
             }
 
             videoRef.current.style.transform = "scaleX(-1)";
-            videoRef.current.style.objectFit = isMobile ? "contain" : "cover";  
+            videoRef.current.style.objectFit = "cover";
             
             if (isMobile) {
-              const checkVideoSize = () => {
-                if (videoRef.current) {
-                  const vh = window.innerHeight;
-                  const maxHeight = vh * 0.7; // 70% of viewport height
-                  
-                  if (videoRef.current.offsetHeight > maxHeight) {
-                    videoRef.current.style.height = `${maxHeight}px`;
-                    videoRef.current.style.width = 'auto';
-                  }
-                }
-              };
-
-              videoRef.current.onloadedmetadata = checkVideoSize;
-
-              window.addEventListener('resize', checkVideoSize);
-              return () => window.removeEventListener('resize', checkVideoSize);
+              // Force full width for mobile
+              videoRef.current.style.width = '100vw';
+              videoRef.current.style.maxWidth = '100vw';
+              videoRef.current.style.borderRadius = '0';
+              videoRef.current.style.border = 'none';
+              videoRef.current.style.left = '0';
+              
+              // Position the element to be full-width
+              const parent = videoRef.current.parentElement;
+              if (parent) {
+                parent.style.width = '100vw';
+                parent.style.maxWidth = '100vw';
+                parent.style.margin = '0';
+                parent.style.padding = '0';
+                parent.style.left = '0';
+                parent.style.position = 'relative';
+              }
             }
           }
         } catch (error) {
@@ -186,26 +196,22 @@ const PhotoBooth = ({ setCapturedImages }) => {
       if (photosTaken >= 4) {
         setCountdown(null);
         setCapturing(false);
-  
-        if (isMobile) {
-          // Just display the images in the preview-side
+
+        try {
           setCapturedImages([...newCapturedImages]);
+          setTimeout(() => {
+            navigate("/preview");
+          }, 300);
+        } catch (error) {
+          console.error("Error navigating to preview:", error);
+          // If navigation fails, at least display the images
           setImages([...newCapturedImages]);
-        } else {
-          try {
-            setCapturedImages([...newCapturedImages]);
-            setImages([...newCapturedImages]);
-  
-            setTimeout(() => {
-              navigate("/preview");
-            }, 500);
-          } catch (error) {
-            console.error("Error navigating to preview:", error);
-            setImages([...newCapturedImages]);
-          }
         }
         return;
       }
+        
+  
+        
   
       let timeLeft = 3;
       setCountdown(timeLeft);
@@ -314,13 +320,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
             className="side-preview"
           />
         ))}
-        {isMobile && capturedImages.length === 4 && (
-          <div className="mobile-actions">
-            <button onClick={() => navigate("/preview")}>
-              View & Edit Photos
-            </button>
-          </div>
-        )}
+        
       </div>
     </div>
       
