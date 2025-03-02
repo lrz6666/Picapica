@@ -21,8 +21,6 @@ const PhotoBooth = ({ setCapturedImages }) => {
       setIsMobile(mobileRegex.test(userAgent));
     };
 
-    checkMobile();
-    startCamera();
   
     const handleVisibilityChange = () => {
         if (!document.hidden) {
@@ -34,7 +32,6 @@ const PhotoBooth = ({ setCapturedImages }) => {
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener('resize', handleResize);
       if (videoRef.current && videoRef.current.srcObject) {
         const tracks = videoRef.current.srcObject.getTracks();
         tracks.forEach(track => track.stop());
@@ -299,8 +296,9 @@ const PhotoBooth = ({ setCapturedImages }) => {
           data-full-width-responsive="true"></ins>
       </div>
 
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
       <script>
-        {`(adsbygoogle = window.adsbygoogle || []).push({});`}
+        (adsbygoogle = window.adsbygoogle || []).push({});
       </script>
 
     </div>
