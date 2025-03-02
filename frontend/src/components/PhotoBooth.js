@@ -11,37 +11,18 @@ const PhotoBooth = ({ setCapturedImages }) => {
   const [countdown, setCountdown] = useState(null);
   const [capturing, setCapturing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [isIPad, setIsIPad] = useState(false);
-
+  
 
   useEffect(() => {
-    // Detect device type
-    const detectDevice = () => {
-      try {
-        const userAgent = navigator.userAgent || "";
-        
-        // Specific check for iPad (includes newer iPads that report as Mac)
-        const isIPadDevice = /iPad/i.test(userAgent) || 
-                            (/Macintosh/i.test(userAgent) && navigator.maxTouchPoints > 1);
-        
-        // General mobile check
-        const isMobileDevice = /android|iphone|ipod|windows phone/i.test(userAgent) || isIPadDevice;
-        
-        console.log("User Agent:", userAgent);
-        console.log("Is iPad:", isIPadDevice);
-        console.log("Is Mobile:", isMobileDevice);
-        
-        setIsIPad(isIPadDevice);
-        setIsMobile(isMobileDevice);
-      } catch (error) {
-        console.error("Error detecting device:", error);
-        // Default to mobile behavior on error for better compatibility
-        setIsMobile(true);
-      }
+    startCamera();
+
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const mobileRegex = /android|ipad|iphone|ipod|windows phone/i;
+      setIsMobile(mobileRegex.test(userAgent));
     };
 
-
-    detectDevice();
+    checkMobile();
     startCamera();
 
   
@@ -71,10 +52,10 @@ const PhotoBooth = ({ setCapturedImages }) => {
 
         const constraints = {
           video: {
-            facingMode: "user",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            frameRate: { ideal: 30 } 
+              facingMode: "user",
+              width: { ideal: isMobile ? 1280 : 1280 }, 
+               height: { ideal: isMobile ? 720 : 720 },
+              frameRate: { ideal: 30 } 
           }
       };
 
@@ -96,9 +77,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 
   // apply fitler using canvas api
   const applyFilterToCanvas = (sourceCanvas, filterType) => {
-    try {
-      console.log("Applying filter to canvas:", filterType);
-      const ctx = sourceCanvas.getContext("2d");
+    const ctx = sourceCanvas.getContext("2d");
     
     // Save the original image data before applying filters
     const imageData = ctx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
@@ -124,82 +103,75 @@ const PhotoBooth = ({ setCapturedImages }) => {
         }
         break;
         
-        case "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)":
-          console.log("Applying vintage filter");
-          for (let i = 0; i < data.length; i += 4) {
-            // Get original RGB values
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-            
-            // Apply grayscale first (no need to store in avg variable yet)
-            const grayValue = (r + g + b) / 3;
-            
-            // Apply contrast and brightness
-            const factor = 1.2; // Contrast factor
-            const brightness = 28; // Brightness boost (110%)
-            const adjustedValue = Math.min(255, Math.max(0, (grayValue - 128) * factor + 128 + brightness));
-            
-            // Apply sepia at 30%
-            const sepiaFactor = 0.3;
-            const normalFactor = 0.7;
-            
-            // Calculate sepia values
-            const sepiaR = (r * 0.393) + (g * 0.769) + (b * 0.189);
-            const sepiaG = (r * 0.349) + (g * 0.686) + (b * 0.168);
-            const sepiaB = (r * 0.272) + (g * 0.534) + (b * 0.131);
-            
-            // Mix regular grayscale with sepia tones
-            data[i] = Math.min(255, adjustedValue * normalFactor + sepiaR * sepiaFactor);
-            data[i + 1] = Math.min(255, adjustedValue * normalFactor + sepiaG * sepiaFactor);
-            data[i + 2] = Math.min(255, adjustedValue * normalFactor + sepiaB * sepiaFactor);
-          }
-          break;
+      case "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)":
+        // vintage effect - FIXED version
+        for (let i = 0; i < data.length; i += 4) {
+          // Get original RGB values
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
           
-        case "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)":
-          console.log("Applying soft filter");
-          for (let i = 0; i < data.length; i += 4) {
-            // Get original RGB values
-            let r = data[i];
-            let g = data[i + 1];
-            let b = data[i + 2];
-            
-            // Apply brightness
-            const brightness = 1.3; // 130%
-            r = r * brightness;
-            g = g * brightness;
-            b = b * brightness;
-            
-            // Apply contrast
-            const contrast = 1.05; // 105%
-            r = (r - 128) * contrast + 128;
-            g = (g - 128) * contrast + 128;
-            b = (b - 128) * contrast + 128;
-            
-            // Apply saturation (80%)
-            const avg = (r + g + b) / 3;
-            const satFactor = 0.8; // 80% saturation
-            
-            data[i] = Math.min(255, Math.max(0, r * satFactor + avg * (1 - satFactor)));
-            data[i + 1] = Math.min(255, Math.max(0, g * satFactor + avg * (1 - satFactor)));
-            data[i + 2] = Math.min(255, Math.max(0, b * satFactor + avg * (1 - satFactor)));
-          }
-          break;
+          // Apply grayscale first (no need to store in avg variable yet)
+          const grayValue = (r + g + b) / 3;
           
-        default:
-          break;
-      }
-
-      ctx.putImageData(imageData, 0, 0);
-      console.log("Filter applied successfully");
-      return sourceCanvas;
-    } catch (error) {
-      console.error("Error applying filter:", error);
-      return sourceCanvas; // Return original canvas on error
+          // Apply contrast and brightness
+          const factor = 1.2; // Contrast factor
+          const brightness = 28; // Brightness boost (110%)
+          const adjustedValue = Math.min(255, Math.max(0, (grayValue - 128) * factor + 128 + brightness));
+          
+          // Apply sepia at 30%
+          const sepiaFactor = 0.3;
+          const normalFactor = 0.7;
+          
+          // Calculate sepia values
+          const sepiaR = (r * 0.393) + (g * 0.769) + (b * 0.189);
+          const sepiaG = (r * 0.349) + (g * 0.686) + (b * 0.168);
+          const sepiaB = (r * 0.272) + (g * 0.534) + (b * 0.131);
+          
+          // Mix regular grayscale with sepia tones
+          data[i] = Math.min(255, adjustedValue * normalFactor + sepiaR * sepiaFactor);
+          data[i + 1] = Math.min(255, adjustedValue * normalFactor + sepiaG * sepiaFactor);
+          data[i + 2] = Math.min(255, adjustedValue * normalFactor + sepiaB * sepiaFactor);
+        }
+        break;
+        
+      case "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)":
+        // soft effect
+        for (let i = 0; i < data.length; i += 4) {
+          // Get original RGB values
+          let r = data[i];
+          let g = data[i + 1];
+          let b = data[i + 2];
+          
+          // Apply brightness
+          const brightness = 1.3; // 130%
+          r = r * brightness;
+          g = g * brightness;
+          b = b * brightness;
+          
+          // Apply contrast
+          const contrast = 1.05; // 105%
+          r = (r - 128) * contrast + 128;
+          g = (g - 128) * contrast + 128;
+          b = (b - 128) * contrast + 128;
+          
+          // Apply saturation (80%)
+          const avg = (r + g + b) / 3;
+          const satFactor = 0.8; // 80% saturation
+          
+          data[i] = Math.min(255, Math.max(0, r * satFactor + avg * (1 - satFactor)));
+          data[i + 1] = Math.min(255, Math.max(0, g * satFactor + avg * (1 - satFactor)));
+          data[i + 2] = Math.min(255, Math.max(0, b * satFactor + avg * (1 - satFactor)));
+        }
+        break;
+        
+      default:
+        break;
     }
+    
+    ctx.putImageData(imageData, 0, 0);
+    return sourceCanvas;
   };
-    
-    
 
   // Countdown to take 4 pictures automatically
   const startCountdown = () => {
@@ -261,10 +233,8 @@ const PhotoBooth = ({ setCapturedImages }) => {
     const canvas = canvasRef.current;
 
     if (video && canvas) {
-      console.log("Device detection:");
-      console.log("- isMobile:", isMobile);
-      console.log("- isIPad:", isIPad);
-      console.log("- Current filter:", filter);
+      console.log("Device detected as:", isMobile ? "Mobile" : "Desktop");
+      console.log("Current filter:", filter);
 
       const context = canvas.getContext("2d");
 
@@ -312,12 +282,11 @@ const PhotoBooth = ({ setCapturedImages }) => {
         context.restore();
 
        // mobile devices, apply filter manually with canvas api
-       if ((isMobile || isIPad) && filter !== 'none') {
-        console.log("Mobile/iPad: Applying Canvas API filter");
+       if (isMobile && filter !== 'none') {
         applyFilterToCanvas(canvas, filter);
-      }
+       }
 
-      return canvas.toDataURL("image/png");
+        return canvas.toDataURL("image/png");
     }
     return null;
 };
@@ -336,7 +305,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
             disablePictureInPicture 
             disableRemotePlayback
             className="video-feed" 
-            style={{ filter: (!isMobile && !isIPad) ? filter : 'none' }}/>        
+            style={{ filter: !isMobile ? filter : 'none' }}/>        
           <canvas ref={canvasRef} className="hidden" />
         </div>
 
