@@ -12,24 +12,34 @@ const PhotoBooth = ({ setCapturedImages }) => {
   const [capturing, setCapturing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isIPad, setIsIPad] = useState(false);
+  const [debugInfo, setDebugInfo] = useState([]);
 
+  // Helper function to add debug info
+  const addDebug = (message) => {
+    console.log(message);
+    setDebugInfo(prev => [...prev, message]);
+  };
 
   useEffect(() => {
-    // Detect device type
+    // Force mobile detection to true for testing
     const detectDevice = () => {
       try {
         const userAgent = navigator.userAgent || "";
         
         // Specific check for iPad (includes newer iPads that report as Mac)
         const isIPadDevice = /iPad/i.test(userAgent) || 
-                            (/Macintosh/i.test(userAgent) && navigator.maxTouchPoints > 1);
+                            (/Macintosh/i.test(userAgent) && "maxTouchPoints" in navigator && navigator.maxTouchPoints > 1);
         
-        // General mobile check
-        const isMobileDevice = /android|iphone|ipod|windows phone/i.test(userAgent) || isIPadDevice;
+        // General mobile check - including iPhones, Android devices, etc.
+        const isMobileDevice = /Mobi|Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) || isIPadDevice;
         
-        console.log("User Agent:", userAgent);
-        console.log("Is iPad:", isIPadDevice);
-        console.log("Is Mobile:", isMobileDevice);
+        addDebug(`User Agent: ${userAgent}`);
+        addDebug(`Is iPad: ${isIPadDevice}`);
+        addDebug(`Is Mobile: ${isMobileDevice}`);
+        
+        // Force mobile mode for testing
+        // Uncomment the next line to force mobile mode for all devices
+        // const isMobileDevice = true;
         
         setIsIPad(isIPadDevice);
         setIsMobile(isMobileDevice);
@@ -40,15 +50,13 @@ const PhotoBooth = ({ setCapturedImages }) => {
       }
     };
 
-
     detectDevice();
     startCamera();
 
-  
     const handleVisibilityChange = () => {
-        if (!document.hidden) {
-            startCamera();
-        }
+      if (!document.hidden) {
+        startCamera();
+      }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -65,74 +73,80 @@ const PhotoBooth = ({ setCapturedImages }) => {
   // Start Camera
   const startCamera = async () => {
     try {
-        if (videoRef.current && videoRef.current.srcObject) {
-            return; 
-        }
+      if (videoRef.current && videoRef.current.srcObject) {
+        return; 
+      }
 
-        const constraints = {
-          video: {
-            facingMode: "user",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            frameRate: { ideal: 30 } 
-          }
+      const constraints = {
+        video: {
+          facingMode: "user",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30 } 
+        }
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          try {
-            await videoRef.current.play();
-          } catch (err) {
-            console.error("Error playing video:", err);
-          }
-       }
-   } catch (error) {
-     console.error("Error accessing camera:", error);
-     alert("Could not access your camera. Please ensure camera permissions are granted in your browser settings.");
-   }
+        videoRef.current.srcObject = stream;
+        try {
+          await videoRef.current.play();
+          addDebug("Camera started successfully");
+        } catch (err) {
+          console.error("Error playing video:", err);
+          addDebug(`Error playing video: ${err.message}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+      addDebug(`Camera error: ${error.message}`);
+      alert("Could not access your camera. Please ensure camera permissions are granted in your browser settings.");
+    }
   };
 
-
-  // apply fitler using canvas api
+  // Apply filter using canvas API
   const applyFilterToCanvas = (sourceCanvas, filterType) => {
     try {
-      console.log("Applying filter to canvas:", filterType);
+      addDebug(`Applying filter to canvas: ${filterType}`);
       const ctx = sourceCanvas.getContext("2d");
-    
-    // Save the original image data before applying filters
-    const imageData = ctx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
-    const data = imageData.data;
-    
-    switch(filterType) {
-      case "grayscale(100%)":
-        for (let i = 0; i < data.length; i += 4) {
-          const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-          data[i] = data[i + 1] = data[i + 2] = avg;
-        }
-        break;
-        
-      case "sepia(100%)":
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
+      
+      // Save the original image data before applying filters
+      const imageData = ctx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+      const data = imageData.data;
+      
+      switch(filterType) {
+        case "grayscale(100%)":
+          addDebug("Applying grayscale filter");
+          for (let i = 0; i < data.length; i += 4) {
+            const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            data[i] = avg;
+            data[i + 1] = avg;
+            data[i + 2] = avg;
+          }
+          break;
           
-          data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
-          data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
-          data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
-        }
-        break;
-        
+        case "sepia(100%)":
+          addDebug("Applying sepia filter");
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            
+            data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
+            data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
+            data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+          }
+          break;
+          
         case "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)":
-          console.log("Applying vintage filter");
+          addDebug("Applying vintage filter");
           for (let i = 0; i < data.length; i += 4) {
             // Get original RGB values
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
             
-            // Apply grayscale first (no need to store in avg variable yet)
+            // Apply grayscale first
             const grayValue = (r + g + b) / 3;
             
             // Apply contrast and brightness
@@ -157,7 +171,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
           break;
           
         case "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)":
-          console.log("Applying soft filter");
+          addDebug("Applying soft filter");
           for (let i = 0; i < data.length; i += 4) {
             // Get original RGB values
             let r = data[i];
@@ -189,23 +203,23 @@ const PhotoBooth = ({ setCapturedImages }) => {
         default:
           break;
       }
-
+      
       ctx.putImageData(imageData, 0, 0);
-      console.log("Filter applied successfully");
+      addDebug("Filter applied successfully");
       return sourceCanvas;
     } catch (error) {
       console.error("Error applying filter:", error);
+      addDebug(`Error applying filter: ${error.message}`);
       return sourceCanvas; // Return original canvas on error
     }
   };
     
-    
-
   // Countdown to take 4 pictures automatically
   const startCountdown = () => {
     if (capturing) return;
     setCapturing(true);
-  
+    setDebugInfo([]); // Clear debug info
+    
     setImages([]);
     
     let photosTaken = 0;
@@ -223,15 +237,13 @@ const PhotoBooth = ({ setCapturedImages }) => {
           }, 300);
         } catch (error) {
           console.error("Error navigating to preview:", error);
+          addDebug(`Error navigating: ${error.message}`);
           // If navigation fails, at least display the images
           setImages([...newCapturedImages]);
         }
         return;
       }
-        
-  
-        
-  
+      
       let timeLeft = 3;
       setCountdown(timeLeft);
   
@@ -261,10 +273,9 @@ const PhotoBooth = ({ setCapturedImages }) => {
     const canvas = canvasRef.current;
 
     if (video && canvas) {
-      console.log("Device detection:");
-      console.log("- isMobile:", isMobile);
-      console.log("- isIPad:", isIPad);
-      console.log("- Current filter:", filter);
+      addDebug("Capturing photo...");
+      addDebug(`Device detection: isMobile=${isMobile}, isIPad=${isIPad}`);
+      addDebug(`Current filter: ${filter}`);
 
       const context = canvas.getContext("2d");
 
@@ -283,44 +294,46 @@ const PhotoBooth = ({ setCapturedImages }) => {
       let startY = 0;
 
       if (videoRatio > targetRatio) {
-          drawWidth = drawHeight * targetRatio;
-          startX = (video.videoWidth - drawWidth) / 2;
+        drawWidth = drawHeight * targetRatio;
+        startX = (video.videoWidth - drawWidth) / 2;
       } else {
-          drawHeight = drawWidth / targetRatio;
-          startY = (video.videoHeight - drawHeight) / 2;
-        }
+        drawHeight = drawWidth / targetRatio;
+        startY = (video.videoHeight - drawHeight) / 2;
+      }
 
-        context.clearRect(0, 0, canvas.width, canvas.height);
+      context.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Flip canvas for mirroring
-        context.save();
+      // Flip canvas for mirroring
+      context.save();
 
-        // Only use CSS filters on desktop
-        if (!isMobile && filter != 'none') {
-          context.filter = filter;
-          console.log("Desktop: Applying CSS filter");
-        }
+      // Only use CSS filters on desktop
+      if (!isMobile && !isIPad && filter !== 'none') {
+        context.filter = filter;
+        addDebug("Desktop: Applying CSS filter");
+      }
 
-        context.translate(canvas.width, 0);
-        context.scale(-1, 1);
+      context.translate(canvas.width, 0);
+      context.scale(-1, 1);
 
-        context.drawImage(
-            video,
-            startX, startY, drawWidth, drawHeight,  
-            0, 0, targetWidth, targetHeight        
-        );
-        context.restore();
+      context.drawImage(
+        video,
+        startX, startY, drawWidth, drawHeight,  
+        0, 0, targetWidth, targetHeight        
+      );
+      context.restore();
 
-       // mobile devices, apply filter manually with canvas api
-       if ((isMobile || isIPad) && filter !== 'none') {
-        console.log("Mobile/iPad: Applying Canvas API filter");
+      // For mobile devices and iPads, ALWAYS apply filter manually with canvas API
+      if ((isMobile || isIPad) && filter !== 'none') {
+        addDebug("Mobile/iPad: Applying Canvas API filter");
         applyFilterToCanvas(canvas, filter);
       }
 
       return canvas.toDataURL("image/png");
     }
+    
+    addDebug("Error: Video or canvas not available");
     return null;
-};
+  };
 
   return (
     <div className="photo-booth">
@@ -368,6 +381,29 @@ const PhotoBooth = ({ setCapturedImages }) => {
         <button onClick={() => setFilter("brightness(130%) contrast(105%) saturate(80%) blur(0.3px)")} disabled={capturing}>Soft</button>
       </div>
 
+      {/* Debug panel - only visible in development */}
+      {debugInfo.length > 0 && (
+        <div style={{ 
+          position: 'fixed', 
+          bottom: '10px', 
+          right: '10px', 
+          backgroundColor: 'rgba(0,0,0,0.7)', 
+          color: 'white',
+          padding: '10px',
+          borderRadius: '5px',
+          fontSize: '12px',
+          maxWidth: '300px',
+          maxHeight: '200px',
+          overflow: 'auto',
+          zIndex: 1000
+        }}>
+          <h4>Debug Info:</h4>
+          {debugInfo.map((msg, idx) => (
+            <div key={idx}>{msg}</div>
+          ))}
+        </div>
+      )}
+
       <div className="ad-container" style={{ marginTop: "20px", textAlign: "center" }}>
         <ins className="adsbygoogle"
           style={{ display: "block" }}
@@ -381,7 +417,6 @@ const PhotoBooth = ({ setCapturedImages }) => {
       <script>
         (adsbygoogle = window.adsbygoogle || []).push({});
       </script>
-
     </div>
   );
 };
