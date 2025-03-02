@@ -815,6 +815,28 @@ footer a:hover {
     font-size: 1.1rem;
     padding: 10px 20px;
   }
+
+  .navbar {
+    justify-content: flex-end !important;
+    padding: 10px 15px !important;
+  }
+  
+  .paypal-form.always-visible {
+    display: inline-block !important;
+    margin-right: 10px;
+  }
+  
+  .hamburger {
+    display: flex !important;
+  }
+
+  .nav-links {
+    display: none !important;
+  }
+  
+  .nav-links.open {
+    display: flex !important;
+  }
   
   .camera-container {
     width: 100vw;
@@ -927,6 +949,11 @@ footer a:hover {
 @media (min-width: 577px) and (max-width: 992px) {
   .home-container h1 {
     font-size: 2.5rem;
+  }
+
+  .paypal-form.always-visible {
+    display: inline-block !important;
+    margin-right: 10px;
   }
 
   .camera-container {
