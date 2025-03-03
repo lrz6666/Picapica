@@ -13,6 +13,17 @@ const drawMofusandFrame = (ctx, canvas) => {
   };
 };
 
+const drawShinChanFrame = (ctx, canvas) => {
+  const frameImg = new Image();
+  frameImg.src = '/shin-chan.png';
+  
+  frameImg.onload = () => {
+    // Draw the entire frame image on top of the photo strip
+    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+  };
+};
+
+
 const frames = {
   none: {
     draw: (ctx, x, y, width, height) => {}, 
@@ -143,7 +154,12 @@ const frames = {
   mofusandImage: {
     draw: (ctx, x, y, width, height) => {
     }
-  } 
+  }, 
+
+  shinChanImage: {
+    draw: (ctx, x, y, width, height) => {
+    }
+  }
 };
 
 const PhotoPreview = ({ capturedImages }) => {
@@ -205,11 +221,15 @@ const PhotoPreview = ({ capturedImages }) => {
           totalHeight - borderSize / 2
       );
   
-      // Draw the frame if mofusand is selected
+      // Draw the frame if mofusand or shin chan is selected
       if (selectedFrame === "mofusandImage") {
         drawMofusandFrame(ctx, canvas, imgWidth, imgHeight, borderSize, photoSpacing);
+      } else if (selectedFrame === "shinChanImage") {
+        drawShinChanFrame(ctx, canvas, imgWidth, imgHeight, borderSize, photoSpacing);
       }
     };
+
+
   
     if (capturedImages.length === 0) {
       drawText();
@@ -424,9 +444,10 @@ const PhotoPreview = ({ capturedImages }) => {
         <p className="section-title">Stickers</p>
         <div className="frame-options">
           <button onClick={() => setSelectedFrame("none")}>No Stickers</button>
-          <button onClick={() => setSelectedFrame("pastel")}>Girlypop Stickers</button>
-          <button onClick={() => setSelectedFrame("cute")}>Cute Stickers</button>
-          <button onClick={() => setSelectedFrame("mofusandImage")}>Mofusand Stickers</button>
+          <button onClick={() => setSelectedFrame("pastel")}>Girlypop</button>
+          <button onClick={() => setSelectedFrame("cute")}>Cute</button>
+          <button onClick={() => setSelectedFrame("mofusandImage")}>Mofusand</button>
+          <button onClick={() => setSelectedFrame("shinChanImage")}>Shin Chan</button>
         </div>
       </div>
   
