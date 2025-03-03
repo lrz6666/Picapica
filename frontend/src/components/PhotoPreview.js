@@ -171,7 +171,6 @@ const PhotoPreview = ({ capturedImages }) => {
     canvas.width = imgWidth + borderSize * 2;
     canvas.height = totalHeight;
   
-    // Fill the canvas with the selected background color
     ctx.fillStyle = stripColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   
@@ -191,15 +190,12 @@ const PhotoPreview = ({ capturedImages }) => {
         hour12: true
       });
       
-      // Set text color based on strip color (for contrast)
       ctx.fillStyle = stripColor === "black" ? "#FFFFFF" : "#000000";
       ctx.font = "20px Arial";
       ctx.textAlign = "center";
       
-      // Draw the main text (date and time)
       ctx.fillText("Picapica  " + timestamp, canvas.width / 2, totalHeight - borderSize * 1);
   
-      // Draw the copyright text
       ctx.fillStyle = stripColor === "black" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)";
       ctx.font = "12px Arial";  
       ctx.textAlign = "center";
@@ -215,13 +211,11 @@ const PhotoPreview = ({ capturedImages }) => {
       }
     };
   
-    // If there are no images, just draw the text
     if (capturedImages.length === 0) {
       drawText();
       return;
     }
   
-    // Process each captured image
     capturedImages.forEach((image, index) => {
       const img = new Image();
       img.src = image;
@@ -244,14 +238,12 @@ const PhotoPreview = ({ capturedImages }) => {
             sourceY = (img.height - sourceHeight) / 2;
         }
   
-        // Draw the image
         ctx.drawImage(
             img,
             sourceX, sourceY, sourceWidth, sourceHeight, 
             borderSize, yOffset, imgWidth, imgHeight      
         );
   
-        // Apply the selected frame to each photo
         if (frames[selectedFrame] && typeof frames[selectedFrame].draw === 'function') {
           frames[selectedFrame].draw(
               ctx,
@@ -262,16 +254,13 @@ const PhotoPreview = ({ capturedImages }) => {
           );
         }
   
-        // Increment the counter
         imagesLoaded++;
   
-        // After the last image is loaded, draw the text
         if (imagesLoaded === capturedImages.length) {
           drawText();
         }
       };
       
-      // Add error handling for image loading
       img.onerror = () => {
         console.error(`Failed to load image at index ${index}`);
         imagesLoaded++;
@@ -298,38 +287,29 @@ const PhotoPreview = ({ capturedImages }) => {
   };
 
   const sendPhotoStripToEmail = async () => {
-    // Clear previous status
     setStatus("");
     
-    // Comprehensive email validation
     const validateEmail = (email) => {
-      // Basic format check
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) return false;
       
-      // Common typos and issues
       if (email.includes('..') || email.endsWith('.') || email.startsWith('.')) return false;
       if (email.includes('@@') || email.startsWith('@')) return false;
       
-      // Length checks
       if (email.length < 5 || email.length > 254) return false;
       
-      // Domain part checks
       const [localPart, domain] = email.split('@');
       if (!domain || domain.length < 3) return false;
       if (!domain.includes('.')) return false;
       
-      // Local part length check
       if (localPart.length > 64) return false;
       
-      // TLD validation (must be at least 2 characters)
       const tld = domain.split('.').pop();
       if (!tld || tld.length < 2) return false;
       
       return true;
     };
   
-    // List of commonly mistyped domains and their corrections
     const commonMisspellings = {
       'gmail.co': 'gmail.com',
       'gmail.cm': 'gmail.com',
@@ -344,7 +324,6 @@ const PhotoPreview = ({ capturedImages }) => {
       'outlok.com': 'outlook.com'
     };
   
-    // Check and suggest corrections for common email misspellings
     const checkForTypos = (email) => {
       const [localPart, domain] = email.split('@');
       if (commonMisspellings[domain]) {
@@ -361,14 +340,11 @@ const PhotoPreview = ({ capturedImages }) => {
       return;
     }
   
-    // Check for common typos
     const typoCheck = checkForTypos(email);
     if (typoCheck.hasTypo) {
       if (confirm(`Did you mean ${typoCheck.suggestion}?`)) {
         setEmail(typoCheck.suggestion);
-        // Continue with the corrected email
       } else {
-        // User declined correction, continue with validation
       }
     }
   
@@ -377,7 +353,6 @@ const PhotoPreview = ({ capturedImages }) => {
       return;
     }
   
-    // Blocked domains validation
     const blockedDomains = [
       'mymail.lausd.net',
       'lausd.net',
@@ -395,11 +370,10 @@ const PhotoPreview = ({ capturedImages }) => {
     try {
       setStatus("Sending email...");
       
-      // Add a delay to prevent rate limiting
       await new Promise(resolve => setTimeout(resolve, 500));
       
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/send-photo-strip`, {
-        recipientEmail: email.trim(), // Trim to remove any accidental spaces
+        recipientEmail: email.trim(), 
         imageData: stripCanvasRef.current.toDataURL("image/jpeg", 0.7)
       });
   
@@ -416,7 +390,6 @@ const PhotoPreview = ({ capturedImages }) => {
         status: error.response?.status
       });
       
-      // More user-friendly error messages
       if (error.response?.status === 400) {
         setStatus(`Error: ${error.response.data.message || "Invalid email address"}`);
       } else if (error.message.includes("Network Error")) {
@@ -443,6 +416,9 @@ const PhotoPreview = ({ capturedImages }) => {
           <button onClick={() => setStripColor("#adc3e5")}>Blue</button>
           <button onClick={() => setStripColor("#FFF2CC")}>Yellow</button>
           <button onClick={() => setStripColor("#dbcfff")}>Purple</button>
+          <button onClick={() => setStripColor("#800000")}>Maroon</button>
+          <button onClick={() => setStripColor("#845050")}>Burgundy</button>
+
         </div>
   
         <p className="section-title">Stickers</p>
@@ -450,7 +426,7 @@ const PhotoPreview = ({ capturedImages }) => {
           <button onClick={() => setSelectedFrame("none")}>No Stickers</button>
           <button onClick={() => setSelectedFrame("pastel")}>Girlypop Stickers</button>
           <button onClick={() => setSelectedFrame("cute")}>Cute Stickers</button>
-          <button onClick={() => setSelectedFrame("mofusandImage")}>Mofusand</button>
+          <button onClick={() => setSelectedFrame("mofusandImage")}>Mofusand Stickers</button>
         </div>
       </div>
   
