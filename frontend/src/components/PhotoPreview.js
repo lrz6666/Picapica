@@ -160,7 +160,6 @@ const PhotoPreview = ({ capturedImages }) => {
     const canvas = stripCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-
   
     const imgWidth = 400;  
     const imgHeight = 300; 
@@ -168,28 +167,75 @@ const PhotoPreview = ({ capturedImages }) => {
     const photoSpacing = 20;  
     const textHeight = 50;  
     const totalHeight = (imgHeight * 4) + (photoSpacing * 3) + (borderSize * 2) + textHeight;
-
+  
     canvas.width = imgWidth + borderSize * 2;
     canvas.height = totalHeight;
-
+  
+    // Fill the canvas with the selected background color
     ctx.fillStyle = stripColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+  
     let imagesLoaded = 0;
+    
+    // Create a function to draw the text after all images have loaded
+    const drawText = () => {
+      const now = new Date();
+      const timestamp = now.toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric'
+      }) + '  ' + 
+      now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      
+      // Set text color based on strip color (for contrast)
+      ctx.fillStyle = stripColor === "black" ? "#FFFFFF" : "#000000";
+      ctx.font = "20px Arial";
+      ctx.textAlign = "center";
+      
+      // Draw the main text (date and time)
+      ctx.fillText("Picapica  " + timestamp, canvas.width / 2, totalHeight - borderSize * 1);
+  
+      // Draw the copyright text
+      ctx.fillStyle = stripColor === "black" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)";
+      ctx.font = "12px Arial";  
+      ctx.textAlign = "center";
+      ctx.fillText(
+          "© 2025 AW",
+          canvas.width - borderSize,
+          totalHeight - borderSize / 2
+      );
+  
+      // Draw the frame if mofusand is selected
+      if (selectedFrame === "mofusandImage") {
+        drawMofusandFrame(ctx, canvas, imgWidth, imgHeight, borderSize, photoSpacing);
+      }
+    };
+  
+    // If there are no images, just draw the text
+    if (capturedImages.length === 0) {
+      drawText();
+      return;
+    }
+  
+    // Process each captured image
     capturedImages.forEach((image, index) => {
       const img = new Image();
       img.src = image;
       img.onload = () => {
         const yOffset = borderSize + (imgHeight + photoSpacing) * index;
-
+  
         const imageRatio = img.width / img.height;
         const targetRatio = imgWidth / imgHeight;
-
+  
         let sourceWidth = img.width;
         let sourceHeight = img.height;
         let sourceX = 0;
         let sourceY = 0;
-
+  
         if (imageRatio > targetRatio) {
             sourceWidth = sourceHeight * targetRatio;
             sourceX = (img.width - sourceWidth) / 2;
@@ -197,15 +243,15 @@ const PhotoPreview = ({ capturedImages }) => {
             sourceHeight = sourceWidth / targetRatio;
             sourceY = (img.height - sourceHeight) / 2;
         }
-
+  
+        // Draw the image
         ctx.drawImage(
             img,
             sourceX, sourceY, sourceWidth, sourceHeight, 
             borderSize, yOffset, imgWidth, imgHeight      
         );
-
-        
-
+  
+        // Apply the selected frame to each photo
         if (frames[selectedFrame] && typeof frames[selectedFrame].draw === 'function') {
           frames[selectedFrame].draw(
               ctx,
@@ -214,47 +260,26 @@ const PhotoPreview = ({ capturedImages }) => {
               imgWidth,
               imgHeight
           );
-       } 
-    
-        
-        
-
-        if (imagesLoaded === capturedImages.length) {
-          const now = new Date();
-          const timestamp = now.toLocaleDateString('en-US', {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric'
-          }) + '  ' + 
-          now.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-          });
-          
-          ctx.fillStyle = stripColor === "black" ? "#FFFFFF" : "#000000";
-          ctx.font = "20px Arial";
-          ctx.textAlign = "center";
-          
-          ctx.fillText("Picapica  " + timestamp, canvas.width / 2, totalHeight - borderSize * 1);
-
-
-          ctx.fillStyle = stripColor === "black" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)";
-          ctx.font = "12px Arial";  
-          ctx.textAlign = "center";
-
-          ctx.fillText(
-              "© 2025 AW",
-              canvas.width - borderSize,
-              totalHeight - borderSize / 2
-          );
-
-          if (selectedFrame === "mofusandImage") {
-            drawMofusandFrame(ctx, canvas, imgWidth, imgHeight, borderSize, photoSpacing);
         }
-      }
-    };
-  });
+  
+        // Increment the counter
+        imagesLoaded++;
+  
+        // After the last image is loaded, draw the text
+        if (imagesLoaded === capturedImages.length) {
+          drawText();
+        }
+      };
+      
+      // Add error handling for image loading
+      img.onerror = () => {
+        console.error(`Failed to load image at index ${index}`);
+        imagesLoaded++;
+        if (imagesLoaded === capturedImages.length) {
+          drawText();
+        }
+      };
+    });
   }, [capturedImages, stripColor, selectedFrame]);
 
   useEffect(() => {
