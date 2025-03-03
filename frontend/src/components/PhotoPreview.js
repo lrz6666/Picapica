@@ -3,22 +3,32 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 /* N */
+/* Mofusand frame */
 const drawMofusandFrame = (ctx, canvas) => {
   const frameImg = new Image();
   frameImg.src = '/mofusand-frame.png';
   
   frameImg.onload = () => {
-    // Draw the entire frame image on top of the photo strip
     ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
   };
 };
 
+/* Crayon Shin Chan Frame */
 const drawShinChanFrame = (ctx, canvas) => {
   const frameImg = new Image();
   frameImg.src = '/shin-chan.png';
   
   frameImg.onload = () => {
-    // Draw the entire frame image on top of the photo strip
+    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+  };
+};
+
+/* Miffy Frame */
+const drawMiffyFrame = (ctx, canvas) => {
+  const frameImg = new Image();
+  frameImg.src = '/miffy-frame.png';
+  
+  frameImg.onload = () => {
     ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
   };
 };
@@ -159,6 +169,11 @@ const frames = {
   shinChanImage: {
     draw: (ctx, x, y, width, height) => {
     }
+  },
+
+  miffyImage: {
+    draw: (ctx, x, y, width, height) => {
+    }
   }
 };
 
@@ -226,7 +241,9 @@ const PhotoPreview = ({ capturedImages }) => {
         drawMofusandFrame(ctx, canvas, imgWidth, imgHeight, borderSize, photoSpacing);
       } else if (selectedFrame === "shinChanImage") {
         drawShinChanFrame(ctx, canvas, imgWidth, imgHeight, borderSize, photoSpacing);
-      }
+      } else if (selectedFrame === "miffyImage") {
+        drawMiffyFrame(ctx, canvas, imgWidth, imgHeight, borderSize, photoSpacing);
+      } 
     };
 
 
@@ -448,6 +465,7 @@ const PhotoPreview = ({ capturedImages }) => {
           <button onClick={() => setSelectedFrame("cute")}>Cute</button>
           <button onClick={() => setSelectedFrame("mofusandImage")}>Mofusand</button>
           <button onClick={() => setSelectedFrame("shinChanImage")}>Shin Chan</button>
+          <button onClick={() => setSelectedFrame("miffyImage")}>Miffy</button>
         </div>
       </div>
   
