@@ -187,6 +187,19 @@ const PhotoPreview = ({ capturedImages }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
   const [qrCodeStatus, setQrCodeStatus] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false); // to add pop up qr code
+  const [copied, setCopied] = useState(false);
+
+  
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+      })
+      .catch(err => console.error("Failed to copy:", err));
+  };
+
 
 
 
@@ -449,7 +462,7 @@ const PhotoPreview = ({ capturedImages }) => {
       setQrCodeStatus("Generating QR code...");
       setQrCodeUrl(""); 
       
-      // Step 1: Optimize the canvas image before sending
+      // Optimize the canvas image before sending
       const canvas = stripCanvasRef.current;
       
       // Create a smaller version of the image for QR code generation
@@ -571,6 +584,10 @@ const PhotoPreview = ({ capturedImages }) => {
                 borderRadius: "5px"
               }} 
             />
+
+            <button onClick={() => copyToClipboard(qrCodeUrl)}>Copy Link</button>
+            {copied && <p style={{ color: "green", fontSize: "14px" }}>Link copied!</p>}
+            
             <p style={{ fontSize: "12px", color: "#666", margin: "10px 0" }}>
               This link will expire in 24 hours
             </p>
