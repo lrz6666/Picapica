@@ -224,13 +224,15 @@ const PhotoPreview = ({ capturedImages }) => {
         hour12: true
       });
       
-      ctx.fillStyle = stripColor === "black" ? "#FFFFFF" : "#000000";
+      ctx.fillStyle = (stripColor === "black" || stripColor === "800000") ? "#FFFFFF" : "#000000";
       ctx.font = "20px Arial";
       ctx.textAlign = "center";
       
       ctx.fillText("Picapica  " + timestamp, canvas.width / 2, totalHeight - borderSize * 1);
   
-      ctx.fillStyle = stripColor === "black" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)";
+      ctx.fillStyle = (stripColor === "black" || stripColor === "800000") 
+        ? "rgba(255, 255, 255, 0.5)" 
+        : "rgba(0, 0, 0, 0.5)";
       ctx.font = "12px Arial";  
       ctx.textAlign = "center";
       ctx.fillText(
