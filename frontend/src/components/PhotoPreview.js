@@ -184,6 +184,9 @@ const PhotoPreview = ({ capturedImages }) => {
   const [selectedFrame, setSelectedFrame] = useState("none");
   const [email, setEmail] = useState("");  
   const [status, setStatus] = useState(""); 
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+  const [qrCodeStatus, setQrCodeStatus] = useState("");
 
 
 
@@ -436,6 +439,30 @@ const PhotoPreview = ({ capturedImages }) => {
       }
     }
   };
+
+  const generateQRCode = async () => {
+    try {
+      setIsGeneratingQR(true);
+      setQrCodeStatus("Generating QR code...");
+      setQrCodeUrl(""); // Reset any previous QR code
+      
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/generate-qr-code`, {
+        imageData: stripCanvasRef.current.toDataURL("image/jpeg", 0.7)
+      });
+      
+      if (response.data.success) {
+        setQrCodeUrl(response.data.qrCodeDataUrl);
+        setQrCodeStatus("Scan this QR code to view and download your photo strip!");
+      } else {
+        setQrCodeStatus(`Error: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error("Error generating QR code:", error);
+      setQrCodeStatus("Failed to generate QR code. Please try again.");
+    } finally {
+      setIsGeneratingQR(false);
+    }
+  };
   
   return (
     <div className="photo-preview">
@@ -474,6 +501,9 @@ const PhotoPreview = ({ capturedImages }) => {
       <div className="control-section">
         <div className="action-buttons">
           <button onClick={downloadPhotoStrip}>📥 Download Photo Strip</button>
+          <button onClick={generateQRCode} disabled={isGeneratingQR}>
+            {isGeneratingQR ? "Generating..." : "🔗 Generate QR Code"}
+          </button>
           <button onClick={() => navigate("/photobooth")}>🔄 Take New Photos</button>
         </div>
   
@@ -487,6 +517,29 @@ const PhotoPreview = ({ capturedImages }) => {
           <button onClick={sendPhotoStripToEmail}>Send to Email</button>
           <p className="status-message">{status}</p>
         </div>
+
+        {qrCodeUrl && (
+          <div className="qr-code-section">
+            <h3>QR Code</h3>
+            <p>{qrCodeStatus}</p>
+            <img 
+              src={qrCodeUrl} 
+              alt="QR Code for photo access" 
+              style={{ 
+                maxWidth: "200px", 
+                margin: "10px auto", 
+                display: "block",
+                border: "1px solid #ddd",
+                padding: "10px",
+                background: "white",
+                borderRadius: "5px"
+              }} 
+            />
+            <p style={{ fontSize: "12px", color: "#666", margin: "10px 0" }}>
+              This link will expire in 24 hours
+            </p>
+          </div>
+        )}
 
         {/* Mondiad Native Ad Placement */}
         <div data-mndazid="271b449a-0c81-4ef0-8379-237125f2e40e"></div>
