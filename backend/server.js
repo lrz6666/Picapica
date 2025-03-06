@@ -279,6 +279,8 @@ app.post("/send-message", async (req, res) => {
 });
 
 // Send photo strip endpoint
+// NOTE: This endpoint is temporarily not used by the frontend UI
+// Email functionality has been disabled in favor of QR codes
 app.post("/send-photo-strip", async (req, res) => {
   const { recipientEmail, imageData } = req.body;
 
@@ -395,6 +397,190 @@ app.post("/send-photo-strip", async (req, res) => {
       message: errorMessage,
       error: error.toString()
     });
+  }
+});
+
+const qrcode = require('qrcode');
+const { v4: uuidv4 } = require('uuid');
+
+app.post("/generate-qr-code", async (req, res) => {
+  const { imageData } = req.body;
+
+  console.log("Generating QR code for photo sharing");
+  
+  if (!imageData) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing image data"
+    });
+  }
+
+  try {
+    const photoId = uuidv4();
+    const photoDir = path.join(uploadDir, 'qr-photos');
+    if (!fs.existsSync(photoDir)) {
+      fs.mkdirSync(photoDir, { recursive: true });
+    }
+    
+    const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
+    const photoPath = path.join(photoDir, `${photoId}.jpg`);
+    
+    fs.writeFile(photoPath, base64Data, { encoding: 'base64' }, (err) => {
+      if (err) console.error('Error saving image:', err);
+    });
+    
+    // Create the URL that will be encoded in the QR code
+    const photoUrl = `${req.protocol}://${req.get('host')}/photos/${photoId}`;
+    
+    // Generate QR code with optimized settings
+    const qrCodeDataUrl = await qrcode.toDataURL(photoUrl, {
+      errorCorrectionLevel: 'M', // Changed from H to M for faster generation
+      margin: 1,
+      width: 250, 
+      color: {
+        dark: '#000000',
+        light: '#ffffff'
+      }
+    });
+    
+    // Log successful QR generation
+    console.log(`QR code generated successfully for photo ID: ${photoId}`);
+    
+    // Set up a cleanup job to delete photos after 24 hours
+    setTimeout(() => {
+      if (fs.existsSync(photoPath)) {
+        fs.unlink(photoPath, (err) => {
+          if (err) console.error(`Error deleting expired photo ${photoId}:`, err);
+          else console.log(`Deleted expired photo: ${photoId}`);
+        });
+      }
+    }, 24 * 60 * 60 * 1000);
+    
+    res.json({
+      success: true,
+      qrCodeDataUrl,
+      photoUrl,
+      expiresIn: '24h'
+    });
+    
+  } catch (error) {
+    console.error('Error generating QR code:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate QR code',
+      error: error.toString()
+    });
+  }
+});
+
+// Add this endpoint to serve the photos when scanned
+app.get('/photos/:id', (req, res) => {
+  const photoId = req.params.id;
+  const photoPath = path.join(uploadDir, 'qr-photos', `${photoId}.jpg`);
+  
+  if (fs.existsSync(photoPath)) {
+    // Serve the photo with a simple HTML wrapper
+    const photoData = fs.readFileSync(photoPath, { encoding: 'base64' });
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Your Picapica Photo</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: radial-gradient(
+              circle at center,
+              rgba(255, 153, 178, 0.5) 20%,
+              rgba(255, 240, 245, 0.9) 40%,
+              rgba(255, 250, 250, 1) 70%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+          }
+          h1 {
+            color: #333;
+            margin-bottom: 20px;
+          }
+          .photo-container {
+            max-width: 100%;
+            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+          }
+          img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+          }
+          .download-btn {
+            background: #afcaa6;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s ease;
+          }
+          .download-btn:hover {
+            background: #91a58a;
+          }
+          footer {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #777;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Your Picapica Photo Strip!</h1>
+        <div class="photo-container">
+          <img src="data:image/jpeg;base64,${photoData}" alt="Your Photo Strip" />
+        </div>
+        <a class="download-btn" href="data:image/jpeg;base64,${photoData}" download="picapica-photostrip.jpg">Download Photo</a>
+        <footer>© 2025 Agnes Wei. All Rights Reserved.</footer>
+      </body>
+      </html>
+    `;
+    
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  } else {
+    res.status(404).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Photo Not Found</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 40px 20px;
+            background: #f8f8f8;
+          }
+          h1 { color: #afcaa6; }
+          p { color: #555; }
+        </style>
+      </head>
+      <body>
+        <h1>Photo Not Found</h1>
+        <p>This photo has expired or doesn't exist.</p>
+        <p>Photos are automatically deleted after 24 hours for privacy reasons.</p>
+        <p><a href="https://picapicabooth.com">Return to Picapica</a></p>
+      </body>
+      </html>
+    `);
   }
 });
 

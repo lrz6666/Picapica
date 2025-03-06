@@ -184,6 +184,22 @@ const PhotoPreview = ({ capturedImages }) => {
   const [selectedFrame, setSelectedFrame] = useState("none");
   const [email, setEmail] = useState("");  
   const [status, setStatus] = useState(""); 
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+  const [qrCodeStatus, setQrCodeStatus] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false); // to add pop up qr code
+  const [copied, setCopied] = useState(false);
+
+  
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+      })
+      .catch(err => console.error("Failed to copy:", err));
+  };
+
 
 
 
@@ -221,13 +237,15 @@ const PhotoPreview = ({ capturedImages }) => {
         hour12: true
       });
       
-      ctx.fillStyle = stripColor === "black" ? "#FFFFFF" : "#000000";
+      ctx.fillStyle = (stripColor === "black" || stripColor === "800000") ? "#FFFFFF" : "#000000";
       ctx.font = "20px Arial";
       ctx.textAlign = "center";
       
       ctx.fillText("Picapica  " + timestamp, canvas.width / 2, totalHeight - borderSize * 1);
   
-      ctx.fillStyle = stripColor === "black" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)";
+      ctx.fillStyle = (stripColor === "black" || stripColor === "800000") 
+        ? "rgba(255, 255, 255, 0.5)" 
+        : "rgba(0, 0, 0, 0.5)";
       ctx.font = "12px Arial";  
       ctx.textAlign = "center";
       ctx.fillText(
@@ -323,6 +341,7 @@ const PhotoPreview = ({ capturedImages }) => {
     link.click();
   };
 
+  /*
   const sendPhotoStripToEmail = async () => {
     setStatus("");
     
@@ -435,6 +454,61 @@ const PhotoPreview = ({ capturedImages }) => {
         setStatus(`Error: ${error.response?.data?.message || "Failed to send. Please try again later."}`);
       }
     }
+  }; */
+
+  const generateQRCode = async () => {
+    try {
+      setIsGeneratingQR(true);
+      setQrCodeStatus("Generating QR code...");
+      setQrCodeUrl(""); 
+      
+      // Optimize the canvas image before sending
+      const canvas = stripCanvasRef.current;
+      
+      // Create a smaller version of the image for QR code generation
+      const optimizedCanvas = document.createElement('canvas');
+      const targetWidth = 800; // Reduced from original size
+      const aspectRatio = canvas.height / canvas.width;
+      const targetHeight = targetWidth * aspectRatio;
+      
+      optimizedCanvas.width = targetWidth;
+      optimizedCanvas.height = targetHeight;
+      
+      // Draw original canvas content to the smaller canvas
+      const ctx = optimizedCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, targetWidth, targetHeight);
+      
+      // Use lower quality JPEG for faster upload (0.7 is good balance of quality vs size)
+      const optimizedImageData = optimizedCanvas.toDataURL("image/jpeg", 0.6);
+      
+      // Add a timeout to ensure UI updates before the network request
+      setTimeout(async () => {
+        try {
+          const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+          
+          // Step 2: Send the optimized image to the server
+          const response = await axios.post(`${BACKEND_URL}/generate-qr-code`, {
+            imageData: optimizedImageData
+          });
+          
+          if (response.data.success) {
+            setQrCodeUrl(response.data.qrCodeDataUrl);
+            setQrCodeStatus("Scan this QR code to view and download your photo strip!");
+          } else {
+            setQrCodeStatus(`Error: ${response.data.message}`);
+          }
+        } catch (error) {
+          console.error("Error generating QR code:", error);
+          setQrCodeStatus("Failed to generate QR code. Please try again.");
+        } finally {
+          setIsGeneratingQR(false);
+        }
+      }, 100); // Small timeout for UI update
+    } catch (error) {
+      console.error("Error preparing image:", error);
+      setQrCodeStatus("Failed to prepare image. Please try again.");
+      setIsGeneratingQR(false);
+    }
   };
   
   return (
@@ -474,9 +548,13 @@ const PhotoPreview = ({ capturedImages }) => {
       <div className="control-section">
         <div className="action-buttons">
           <button onClick={downloadPhotoStrip}>📥 Download Photo Strip</button>
+          <button onClick={generateQRCode} disabled={isGeneratingQR}>
+            {isGeneratingQR ? "Generating..." : "🔗 Download via QR Code"}
+          </button>
           <button onClick={() => navigate("/photobooth")}>🔄 Take New Photos</button>
         </div>
-  
+
+          {/* Email section commented out
         <div className="email-section">
           <input
             type="email"
@@ -487,6 +565,39 @@ const PhotoPreview = ({ capturedImages }) => {
           <button onClick={sendPhotoStripToEmail}>Send to Email</button>
           <p className="status-message">{status}</p>
         </div>
+         */}
+
+        {qrCodeUrl && (
+          <div className="qr-code-section">
+            <h3>QR Code</h3>
+            <p>{qrCodeStatus}</p>
+            <img 
+              src={qrCodeUrl} 
+              alt="QR Code for photo access" 
+              style={{ 
+                maxWidth: "200px", 
+                margin: "10px auto", 
+                display: "block",
+                border: "1px solid #ddd",
+                padding: "10px",
+                background: "white",
+                borderRadius: "5px"
+              }} 
+            />
+
+            <button onClick={() => copyToClipboard(qrCodeUrl)}>Copy Link</button>
+            {copied && <p style={{ color: "green", fontSize: "14px" }}>Link copied!</p>}
+            
+            <p style={{ fontSize: "12px", color: "#666", margin: "10px 0" }}>
+              This link will expire in 24 hours
+            </p>
+          </div>
+        )}
+
+        {/* Mondiad Native Ad Placement */}
+        <div data-mndazid="271b449a-0c81-4ef0-8379-237125f2e40e"></div>
+
+
       </div>
     </div>
   );

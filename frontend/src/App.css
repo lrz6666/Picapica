@@ -559,6 +559,42 @@ body {
   display: flex;
 }
 
+.qr-code-section {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  margin: 20px auto;
+}
+
+.qr-code-section h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.qr-code-section p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+}
+
+.qr-code-section img {
+  transition: transform 0.3s ease;
+}
+
+.qr-code-section img:hover {
+  transform: scale(1.05);
+}
+
+
 /* test */
 
 .welcome-container h1 {
@@ -770,10 +806,11 @@ footer a:hover {
 }
 
 /* email */
+/*
 .email-section {
   margin-top: 20px;
   width: 100%;
-  max-width: 250px;  /* Added max-width for better layout */
+  max-width: 250px;  
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -794,6 +831,7 @@ footer a:hover {
   font-size: 14px;
   color: #333;
 }
+*/
 
 /* Small devices (phones, up to 576px) */
 @media (max-width: 576px) {
@@ -839,29 +877,21 @@ footer a:hover {
     position: fixed;
     top: 0;
     right: 0;
-    height: 100vh;
-    width: 250px;
-    background-color: rgba(255, 255, 255, 0.95);;
     flex-direction: column;
-    gap: 20px;
-    padding: 60px 20px;
-    transition: right 0.3s ease-in-out;
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.95);
+    width: 80%;
+    height: 100vh;
+    padding: 60px 20px 20px;
+    z-index: 1050;
+    align-items: flex-start;
   }
 
   .nav-links.open a {
-    font-size: 1.2rem;
-    padding: 12px 0;
-    border-bottom: 1px solid #ddd;
+    margin: 10px 0;
+    padding: 8px 0;
     width: 100%;
-    text-align: left;
-  }
-
-  .nav-links a {
-    font-size: 1.2rem;
-    padding: 12px 0;
     border-bottom: 1px solid #ddd;
+    text-align: left;
   }
   
   .camera-container {
@@ -1273,6 +1303,10 @@ footer a:hover {
     margin-top: 15px;
     margin-left: 0;
     justify-content: center;
+  }
+
+  .qr-code-section {
+    width: 90%;
   }
 }
 
