@@ -120,6 +120,32 @@ const PhotoBooth = ({ setCapturedImages }) => {
           data[i + 2] = b * 0.8 + avg * 0.2;
         }
         break;
+      case "brightness(125%) contrast(105%) saturate(110%) hue-rotate(-4deg)":
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          let newR = r * 1.25;
+          let newG = g * 1.25;
+          let newB = b * 1.25;
+          newR = 128 + (newR - 128) * 1.05;
+          newG = 128 + (newG - 128) * 1.05;
+          newB = 128 + (newB - 128) * 1.05;
+        const gray = 0.2989 * newR + 0.5870 * newG + 0.1140 * newB;
+          newR = gray + (newR - gray) * 1.1;
+          newG = gray + (newG - gray) * 1.1;
+          newB = gray + (newB - gray) * 1.1;
+          const cos = Math.cos(-4 * Math.PI / 180);
+          const sin = Math.sin(-4 * Math.PI / 180);
+          const newR2 = newR * cos - newG * sin;
+          const newG2 = newR * sin + newG * cos;
+          newR = newR2;
+          newG = newG2;
+          data[i] = Math.min(255, Math.max(0, newR));
+          data[i + 1] = Math.min(255, Math.max(0, newG));
+          data[i + 2] = Math.min(255, Math.max(0, newB));
+        }
+        break;
       default:
         break;
     }
