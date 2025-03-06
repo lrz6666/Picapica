@@ -416,20 +416,15 @@ app.post("/generate-qr-code", async (req, res) => {
   }
 
   try {
-    // Generate a unique ID for this photo
     const photoId = uuidv4();
-    
-    // Create photo directory if it doesn't exist
     const photoDir = path.join(uploadDir, 'qr-photos');
     if (!fs.existsSync(photoDir)) {
       fs.mkdirSync(photoDir, { recursive: true });
     }
     
-    // Save the photo (removing the base64 prefix if present)
     const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
     const photoPath = path.join(photoDir, `${photoId}.jpg`);
     
-    // Process this in the background without waiting for it
     fs.writeFile(photoPath, base64Data, { encoding: 'base64' }, (err) => {
       if (err) console.error('Error saving image:', err);
     });
@@ -441,7 +436,7 @@ app.post("/generate-qr-code", async (req, res) => {
     const qrCodeDataUrl = await qrcode.toDataURL(photoUrl, {
       errorCorrectionLevel: 'M', // Changed from H to M for faster generation
       margin: 1,
-      width: 250, // Reduced size
+      width: 250, 
       color: {
         dark: '#000000',
         light: '#ffffff'
@@ -461,7 +456,6 @@ app.post("/generate-qr-code", async (req, res) => {
       }
     }, 24 * 60 * 60 * 1000);
     
-    // Return the QR code data URL to the client
     res.json({
       success: true,
       qrCodeDataUrl,
@@ -529,8 +523,8 @@ app.get('/photos/:id', (req, res) => {
             display: block;
           }
           .download-btn {
-            background: #ff69b4;
-            color: white;
+            background: #afcaa6;
+            color: black;
             border: none;
             padding: 10px 20px;
             border-radius: 25px;
@@ -540,7 +534,7 @@ app.get('/photos/:id', (req, res) => {
             transition: background 0.3s ease;
           }
           .download-btn:hover {
-            background: #ff5ba7;
+            background: #91a58a;
           }
           footer {
             margin-top: 40px;
@@ -550,7 +544,7 @@ app.get('/photos/:id', (req, res) => {
         </style>
       </head>
       <body>
-        <h1>Your Picapica Photo Strip</h1>
+        <h1>Your Picapica Photo Strip!</h1>
         <div class="photo-container">
           <img src="data:image/jpeg;base64,${photoData}" alt="Your Photo Strip" />
         </div>
@@ -575,7 +569,7 @@ app.get('/photos/:id', (req, res) => {
             padding: 40px 20px;
             background: #f8f8f8;
           }
-          h1 { color: #ff69b4; }
+          h1 { color: #afcaa6; }
           p { color: #555; }
         </style>
       </head>
