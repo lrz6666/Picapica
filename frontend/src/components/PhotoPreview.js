@@ -487,6 +487,11 @@ const PhotoPreview = ({ capturedImages }) => {
           <button onClick={sendPhotoStripToEmail}>Send to Email</button>
           <p className="status-message">{status}</p>
         </div>
+
+        {/* Mondiad Native Ad Placement */}
+        <div data-mndazid="271b449a-0c81-4ef0-8379-237125f2e40e"></div>
+
+
       </div>
     </div>
   );
