@@ -326,6 +326,7 @@ const PhotoPreview = ({ capturedImages }) => {
     link.click();
   };
 
+  /*
   const sendPhotoStripToEmail = async () => {
     setStatus("");
     
@@ -438,13 +439,13 @@ const PhotoPreview = ({ capturedImages }) => {
         setStatus(`Error: ${error.response?.data?.message || "Failed to send. Please try again later."}`);
       }
     }
-  };
+  }; */
 
   const generateQRCode = async () => {
     try {
       setIsGeneratingQR(true);
       setQrCodeStatus("Generating QR code...");
-      setQrCodeUrl(""); // Reset any previous QR code
+      setQrCodeUrl(""); 
       
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/generate-qr-code`, {
         imageData: stripCanvasRef.current.toDataURL("image/jpeg", 0.7)
@@ -462,7 +463,7 @@ const PhotoPreview = ({ capturedImages }) => {
     } finally {
       setIsGeneratingQR(false);
     }
-  };
+  }; 
   
   return (
     <div className="photo-preview">
@@ -506,7 +507,8 @@ const PhotoPreview = ({ capturedImages }) => {
           </button>
           <button onClick={() => navigate("/photobooth")}>🔄 Take New Photos</button>
         </div>
-  
+
+          {/* Email section commented out
         <div className="email-section">
           <input
             type="email"
@@ -517,6 +519,7 @@ const PhotoPreview = ({ capturedImages }) => {
           <button onClick={sendPhotoStripToEmail}>Send to Email</button>
           <p className="status-message">{status}</p>
         </div>
+         */}
 
         {qrCodeUrl && (
           <div className="qr-code-section">

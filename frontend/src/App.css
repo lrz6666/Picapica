@@ -805,10 +805,11 @@ footer a:hover {
 }
 
 /* email */
+/*
 .email-section {
   margin-top: 20px;
   width: 100%;
-  max-width: 250px;  /* Added max-width for better layout */
+  max-width: 250px;  
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -829,6 +830,7 @@ footer a:hover {
   font-size: 14px;
   color: #333;
 }
+*/
 
 /* Small devices (phones, up to 576px) */
 @media (max-width: 576px) {

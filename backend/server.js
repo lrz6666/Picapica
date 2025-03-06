@@ -279,6 +279,8 @@ app.post("/send-message", async (req, res) => {
 });
 
 // Send photo strip endpoint
+// NOTE: This endpoint is temporarily not used by the frontend UI
+// Email functionality has been disabled in favor of QR codes
 app.post("/send-photo-strip", async (req, res) => {
   const { recipientEmail, imageData } = req.body;
 
