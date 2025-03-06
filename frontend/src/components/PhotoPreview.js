@@ -447,23 +447,54 @@ const PhotoPreview = ({ capturedImages }) => {
       setQrCodeStatus("Generating QR code...");
       setQrCodeUrl(""); 
       
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/generate-qr-code`, {
-        imageData: stripCanvasRef.current.toDataURL("image/jpeg", 0.7)
-      });
+      // Step 1: Optimize the canvas image before sending
+      const canvas = stripCanvasRef.current;
       
-      if (response.data.success) {
-        setQrCodeUrl(response.data.qrCodeDataUrl);
-        setQrCodeStatus("Scan this QR code to view and download your photo strip!");
-      } else {
-        setQrCodeStatus(`Error: ${response.data.message}`);
-      }
+      // Create a smaller version of the image for QR code generation
+      const optimizedCanvas = document.createElement('canvas');
+      const targetWidth = 800; // Reduced from original size
+      const aspectRatio = canvas.height / canvas.width;
+      const targetHeight = targetWidth * aspectRatio;
+      
+      optimizedCanvas.width = targetWidth;
+      optimizedCanvas.height = targetHeight;
+      
+      // Draw original canvas content to the smaller canvas
+      const ctx = optimizedCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, targetWidth, targetHeight);
+      
+      // Use lower quality JPEG for faster upload (0.7 is good balance of quality vs size)
+      const optimizedImageData = optimizedCanvas.toDataURL("image/jpeg", 0.6);
+      
+      // Add a timeout to ensure UI updates before the network request
+      setTimeout(async () => {
+        try {
+          const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+          
+          // Step 2: Send the optimized image to the server
+          const response = await axios.post(`${BACKEND_URL}/generate-qr-code`, {
+            imageData: optimizedImageData
+          });
+          
+          if (response.data.success) {
+            setQrCodeUrl(response.data.qrCodeDataUrl);
+            setQrCodeStatus("Scan this QR code to view and download your photo strip!");
+          } else {
+            setQrCodeStatus(`Error: ${response.data.message}`);
+          }
+        } catch (error) {
+          console.error("Error generating QR code:", error);
+          setQrCodeStatus("Failed to generate QR code. Please try again.");
+        } finally {
+          setIsGeneratingQR(false);
+        }
+      }, 100); // Small timeout for UI update
     } catch (error) {
-      console.error("Error generating QR code:", error);
-      setQrCodeStatus("Failed to generate QR code. Please try again.");
-    } finally {
+      console.error("Error preparing image:", error);
+      setQrCodeStatus("Failed to prepare image. Please try again.");
       setIsGeneratingQR(false);
     }
-  }; 
+  };
   
   return (
     <div className="photo-preview">

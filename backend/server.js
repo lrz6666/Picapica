@@ -403,7 +403,6 @@ app.post("/send-photo-strip", async (req, res) => {
 const qrcode = require('qrcode');
 const { v4: uuidv4 } = require('uuid');
 
-// Add this endpoint after your send-photo-strip endpoint
 app.post("/generate-qr-code", async (req, res) => {
   const { imageData } = req.body;
 
@@ -429,16 +428,20 @@ app.post("/generate-qr-code", async (req, res) => {
     // Save the photo (removing the base64 prefix if present)
     const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
     const photoPath = path.join(photoDir, `${photoId}.jpg`);
-    fs.writeFileSync(photoPath, base64Data, { encoding: 'base64' });
+    
+    // Process this in the background without waiting for it
+    fs.writeFile(photoPath, base64Data, { encoding: 'base64' }, (err) => {
+      if (err) console.error('Error saving image:', err);
+    });
     
     // Create the URL that will be encoded in the QR code
     const photoUrl = `${req.protocol}://${req.get('host')}/photos/${photoId}`;
     
-    // Generate QR code as data URL
+    // Generate QR code with optimized settings
     const qrCodeDataUrl = await qrcode.toDataURL(photoUrl, {
-      errorCorrectionLevel: 'H',
+      errorCorrectionLevel: 'M', // Changed from H to M for faster generation
       margin: 1,
-      width: 300,
+      width: 250, // Reduced size
       color: {
         dark: '#000000',
         light: '#ffffff'
@@ -448,21 +451,23 @@ app.post("/generate-qr-code", async (req, res) => {
     // Log successful QR generation
     console.log(`QR code generated successfully for photo ID: ${photoId}`);
     
+    // Set up a cleanup job to delete photos after 24 hours
+    setTimeout(() => {
+      if (fs.existsSync(photoPath)) {
+        fs.unlink(photoPath, (err) => {
+          if (err) console.error(`Error deleting expired photo ${photoId}:`, err);
+          else console.log(`Deleted expired photo: ${photoId}`);
+        });
+      }
+    }, 24 * 60 * 60 * 1000);
+    
     // Return the QR code data URL to the client
     res.json({
       success: true,
       qrCodeDataUrl,
       photoUrl,
-      expiresIn: '24h' // Inform users photos expire in 24 hours
+      expiresIn: '24h'
     });
-    
-    // Optional: Set up a cleanup job to delete photos after 24 hours
-    setTimeout(() => {
-      if (fs.existsSync(photoPath)) {
-        fs.unlinkSync(photoPath);
-        console.log(`Deleted expired photo: ${photoId}`);
-      }
-    }, 24 * 60 * 60 * 1000);
     
   } catch (error) {
     console.error('Error generating QR code:', error);
