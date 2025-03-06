@@ -30,13 +30,9 @@ const Welcome = () => {
       <ins className="adsbygoogle"
             style={{ display: "block" }}
             data-ad-client="ca-pub-7810675993668366"
-            data-ad-slot="7012809521"
+            data-ad-slot="4993591788"
             data-ad-format="auto"
             data-full-width-responsive="true"></ins>
-
-        <script>
-          {`(adsbygoogle = window.adsbygoogle || []).push({});`}
-        </script>
     </div>
   );
 };
