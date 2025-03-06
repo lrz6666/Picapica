@@ -549,7 +549,7 @@ const PhotoPreview = ({ capturedImages }) => {
         <div className="action-buttons">
           <button onClick={downloadPhotoStrip}>📥 Download Photo Strip</button>
           <button onClick={generateQRCode} disabled={isGeneratingQR}>
-            {isGeneratingQR ? "Generating..." : "🔗 Generate QR Code"}
+            {isGeneratingQR ? "Generating..." : "🔗 Download via QR Code"}
           </button>
           <button onClick={() => navigate("/photobooth")}>🔄 Take New Photos</button>
         </div>
